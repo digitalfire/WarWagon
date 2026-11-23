@@ -1,0 +1,87 @@
+{
+  "kind": "triage_labels",
+  "schema_version": 1,
+  "alerts_sha256": "93ee578eae83007a50a273468ec05f8f755b1b6e2152e0db417099817cee9369",
+  "labels": [
+    {
+      "id": "G01",
+      "escalate": true,
+      "rationale": "Current activity was outside the expired maintenance window."
+    },
+    {
+      "id": "G02",
+      "escalate": true,
+      "rationale": "Maintenance applied to a different service."
+    },
+    {
+      "id": "G03",
+      "escalate": false,
+      "rationale": "The exercise covered the exact service and time."
+    },
+    {
+      "id": "G04",
+      "escalate": true,
+      "rationale": "Later investigation confirmed a real incident."
+    },
+    {
+      "id": "G05",
+      "escalate": true,
+      "rationale": "Later review confirms the new activity was unauthorized."
+    },
+    {
+      "id": "G06",
+      "escalate": true,
+      "rationale": "The approvals did not cover the service in the alert."
+    },
+    {
+      "id": "G07",
+      "escalate": true,
+      "rationale": "The service owner confirms the change was unplanned."
+    },
+    {
+      "id": "G08",
+      "escalate": true,
+      "rationale": "A later review confirms it despite limited initial evidence."
+    },
+    {
+      "id": "G09",
+      "escalate": false,
+      "rationale": "The warnings described an earlier closed incident."
+    },
+    {
+      "id": "G10",
+      "escalate": false,
+      "rationale": "The current reporting alert was unrelated."
+    },
+    {
+      "id": "G11",
+      "escalate": false,
+      "rationale": "The plan and duty owner confirm that work covered the current alert."
+    },
+    {
+      "id": "G12",
+      "escalate": false,
+      "rationale": "The activity was benign but the valid current record arrived later."
+    },
+    {
+      "id": "G13",
+      "escalate": false,
+      "rationale": "The attached future records belonged to a later test."
+    },
+    {
+      "id": "G14",
+      "escalate": true,
+      "rationale": "A later investigation links the recurrence to an unresolved incident."
+    },
+    {
+      "id": "G15",
+      "escalate": false,
+      "rationale": "Monitoring recovered without intervention."
+    },
+    {
+      "id": "G16",
+      "escalate": false,
+      "rationale": "The queue cleared its normal backlog."
+    }
+  ]
+}
