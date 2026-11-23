@@ -1,7 +1,9 @@
 """Execute independent first-pass architecture reviews through real model calls.
 
 No hidden multi-agent capability: each review is a separate invocation with isolated
-messages. Same model/provider does not establish model diversity.
+messages. The observed count links configured endpoints to provider-reported
+model labels. A system fingerprint can describe backend configuration, while
+the underlying model weights remain unverified.
 """
 import argparse
 import hashlib
@@ -55,6 +57,13 @@ def validate_response(output):
     return result
 
 
+def reported_label(response, field):
+    label = response.get(field)
+    if isinstance(label, str):
+        return label.strip() or None
+    return None
+
+
 def review(model,role,proposal):
     system=("You are the "+role+" reviewer. "+ROLES[role]+
       " Give a rigorous independent FIRST-PASS critique. Never assume other reviewers agree. "
@@ -68,6 +77,8 @@ def review(model,role,proposal):
         "endpoint_sha256": hashlib.sha256(model.base_url.encode()).hexdigest(),
         "system_prompt_sha256": hashlib.sha256(system.encode()).hexdigest(),
         "independent_context": True,
+        "response_model": None,
+        "response_system_fingerprint": None,
     }
     started = time.monotonic()
     try:
@@ -78,7 +89,8 @@ def review(model,role,proposal):
             record["http_status"] = exc.code
     else:
         record.update(
-            response_model=response.get("model"),
+            response_model=reported_label(response, "model"),
+            response_system_fingerprint=reported_label(response, "system_fingerprint"),
             response_id=response.get("id"),
             usage=response.get("usage", {}),
         )
@@ -189,6 +201,10 @@ def main():
     verdict_roles = {verdict: [] for verdict in sorted(VERDICTS)}
     for item in valid_reviews:
         verdict_roles[item["review"]["verdict"]].append(item["role"])
+    observed_endpoint_models = {
+        (item["endpoint_sha256"], item["response_model"])
+        for item in reviews if item["response_model"] is not None
+    }
     payload = {
         "kind": "real_model_first_pass_reviews",
         "schema_version": 1,
@@ -196,8 +212,16 @@ def main():
         "proposal_sha256": proposal_sha256,
         "reviewer_model_count": len({model.model for model in reviewers.values()}),
         "configured_endpoint_model_count": len({(m.base_url, m.model) for m in reviewers.values()}),
+        "observed_endpoint_model_count": len(observed_endpoint_models),
+        "roles_without_reported_model": [
+            item["role"] for item in reviews if item["response_model"] is None
+        ],
+        "model_weight_identity_verified": False,
         "model": args.model,
-        "warning": "First-pass calls use isolated contexts. Configured identities do not establish model independence or maintainer approval.",
+        "warning": (
+            "First-pass calls use isolated contexts. Configured and provider-reported "
+            "identities do not establish model weight independence or maintainer approval."
+        ),
         "valid_review_count": len(valid_reviews),
         "verdict_roles": verdict_roles,
         "reviews": reviews,
