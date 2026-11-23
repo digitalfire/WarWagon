@@ -6,6 +6,7 @@ correctness and measurement.
 
 - [Proposal](cases/review-index/proposal.md)
 - [Assessor checklist](cases/review-index/checklist.json)
+- [First pilot result](review-index-pilot.md)
 
 Use only the proposal as reviewer input. Keep the checklist out of the
 model context. Verify the proposal's SHA-256 digest before running. Use
