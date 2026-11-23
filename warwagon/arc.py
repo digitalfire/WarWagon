@@ -101,6 +101,28 @@ def review(model,role,proposal):
     return record
 
 
+def retry_source(source, proposal_sha256, role):
+    source_bytes = source.read_bytes()
+    payload = json.loads(source_bytes)
+    if (
+        not isinstance(payload, dict)
+        or payload.get("schema_version") != 1
+        or payload.get("kind") != "real_model_first_pass_reviews"
+        or payload.get("proposal_sha256") != proposal_sha256
+    ):
+        raise ValueError("retry requires an ARC v1 artifact for the same proposal bytes")
+    reviews = payload.get("reviews")
+    if not isinstance(reviews, list):
+        raise ValueError("retry source has no review records")
+    matches = [record for record in reviews if isinstance(record, dict) and record.get("role") == role]
+    if len(matches) != 1 or matches[0].get("status") not in ("request_failed", "invalid_response"):
+        raise ValueError(f"retry source must contain exactly one unsuccessful review for {role}")
+    return {
+        "artifact_sha256": hashlib.sha256(source_bytes).hexdigest(),
+        "review": matches[0],
+    }
+
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--proposal",type=Path,default=Path("docs/rfcs/RFC-0001-planner-research-v2.md"))
@@ -108,12 +130,27 @@ def main():
     ap.add_argument("--base-url",default=os.getenv("WW_MODEL_BASE_URL","http://127.0.0.1:11434/v1"))
     ap.add_argument("--output",type=Path,default=Path("artifacts/arc-review.json"))
     ap.add_argument("--reviewers-file",type=Path,help="JSON map of role to {model,base_url}; permits distinct model/provider reviewers")
-    args=ap.parse_args()
+    ap.add_argument("--retry-from", type=Path, help="prior ARC artifact containing a failed review")
+    ap.add_argument("--retry-role", choices=ROLES, help="run only this unsuccessful reviewer")
+    args = ap.parse_args()
+    if bool(args.retry_from) != bool(args.retry_role):
+        ap.error("--retry-from and --retry-role must be used together")
+    if args.retry_from and (args.output.resolve() == args.retry_from.resolve() or args.output.exists()):
+        ap.error("retry output must be a new artifact; specify an unused --output path")
     if not args.model and not args.reviewers_file: ap.error("provide --model or --reviewers-file")
-    proposal_bytes = args.proposal.read_bytes()
-    proposal = proposal_bytes.decode("utf-8")
+    try:
+        proposal_bytes = args.proposal.read_bytes()
+        proposal = proposal_bytes.decode("utf-8")
+        proposal_sha256 = hashlib.sha256(proposal_bytes).hexdigest()
+        previous = (
+            retry_source(args.retry_from, proposal_sha256, args.retry_role)
+            if args.retry_from else None
+        )
+    except (OSError, ValueError) as exc:
+        ap.error(str(exc))
     if len(proposal) > 120000:
         ap.error("proposal exceeds 120k characters; freeze a smaller packet")
+    roles = (args.retry_role,) if previous is not None else tuple(ROLES)
     try:
         if args.reviewers_file:
             profiles = json.loads(args.reviewers_file.read_text(encoding="utf-8"))
@@ -122,7 +159,8 @@ def main():
         else:
             profiles = {role: {"model": args.model, "base_url": args.base_url} for role in ROLES}
         reviewers = {}
-        for role, profile in profiles.items():
+        for role in roles:
+            profile = profiles[role]
             if not isinstance(profile, dict) or not all(
                 isinstance(profile.get(key), str) and profile[key].strip()
                 for key in ("base_url", "model")
@@ -142,7 +180,7 @@ def main():
         ap.error(str(exc))
 
     reviews = []
-    for role in ROLES:
+    for role in roles:
         record = review(reviewers[role], role, proposal)
         reviews.append(record)
         print(role, record["status"], flush=True)
@@ -155,7 +193,7 @@ def main():
         "kind": "real_model_first_pass_reviews",
         "schema_version": 1,
         "proposal": str(args.proposal),
-        "proposal_sha256": hashlib.sha256(proposal_bytes).hexdigest(),
+        "proposal_sha256": proposal_sha256,
         "reviewer_model_count": len({model.model for model in reviewers.values()}),
         "configured_endpoint_model_count": len({(m.base_url, m.model) for m in reviewers.values()}),
         "model": args.model,
@@ -164,9 +202,13 @@ def main():
         "verdict_roles": verdict_roles,
         "reviews": reviews,
     }
-    args.output.parent.mkdir(parents=True,exist_ok=True)
-    args.output.write_text(json.dumps(payload,indent=2)+"\n",encoding="utf-8")
+    if previous is not None:
+        payload["retry_of"] = previous
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("x" if previous is not None else "w", encoding="utf-8") as output:
+        json.dump(payload, output, indent=2)
+        output.write("\n")
     print("Saved", args.output)
-    return 0 if len(valid_reviews) == len(ROLES) else 1
+    return 0 if len(valid_reviews) == len(roles) else 1
 if __name__=="__main__":
     raise SystemExit(main())

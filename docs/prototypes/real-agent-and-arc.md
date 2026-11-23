@@ -35,6 +35,23 @@ Endpoint hashes identify configured endpoints without exposing full URLs.
 Provider-reported model names are recorded when supplied. Multiple endpoint
 or model labels alone cannot establish independent model weights.
 
+## Retry a failed ARC reviewer
+
+Pass the original artifact and an unsuccessful role. Use the same proposal
+file and choose a new output path. You can select another model or reuse the
+reviewer profiles.
+
+~~~bash
+python -m warwagon.arc --model "$WW_MODEL" \
+  --proposal docs/adr/0001-docs-as-code.md \
+  --retry-from artifacts/arc-review.json --retry-role research-skeptic \
+  --output artifacts/arc-retry.json
+~~~
+
+The retry artifact contains only the new attempt, the prior review record and
+the original artifact digest. The command checks the proposal digest before
+calling the provider. Its exit status applies to the retried role.
+
 ## Test without a model
 ```bash
 python -m unittest discover -s tests -v
