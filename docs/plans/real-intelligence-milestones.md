@@ -7,11 +7,11 @@ updated: 2026-11-23
 
 This is **engineering planning**, not a promise that agents will continue working autonomously between conversations. Work requires an active developer/agent runtime and available model inference.
 
-## Gate 0 — runnable research prototype (current PR)
-Python model adapter, tool-calling loop, local vulnerable fixture, trace capture, minimal evidence scoring, executable role-isolated ARC review runner and CI. No live provider inference has yet run from this environment.
+## Gate 0 — runnable research prototype
+Python model adapter, tool-calling loop, local vulnerable fixture, trace capture, minimal evidence scoring, executable role-isolated ARC review runner and CI. The prototype is merged. Live Ollama preflight and ARC calls have been recorded. See the [implementation snapshot](../context/current-state.md).
 
 ## Gate 1 — actual model smoke run (suggested 1–3 engineering days after a working tool-calling model endpoint is connected)
-Perform model selection, run against local fixture, inspect full tool trace, log inference use, resolve model API compatibility. Run nine ARC reviewer calls with frozen proposal and record separate first-pass outputs. This is a software exercise, not an external target assessment.
+Perform model selection, run against local fixture, inspect full tool trace, log inference use, resolve model API compatibility. Run nine ARC reviewer calls with frozen proposal and record separate first-pass outputs. The preflight and ARC portions have recorded live evidence. The model-driven lab acceptance criterion remains open in [issue #7](https://github.com/digitalfire/WarWagon/issues/7).
 
 ## Gate 2 — credible single-agent evaluation (suggested 3–7 additional engineering days)
 Introduce held-out locally controlled fixtures, blind scorer and claim/evidence schema; add 10+ varied problems, repeated runs and real cost accounting. Distinguish model luck and fixture memorization.
