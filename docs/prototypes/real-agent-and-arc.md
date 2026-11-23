@@ -52,6 +52,20 @@ The retry artifact contains only the new attempt, the prior review record and
 the original artifact digest. The command checks the proposal digest before
 calling the provider. Its exit status applies to the retried role.
 
+## Assemble an ARC evidence report
+
+~~~bash
+python -m warwagon.arc_report artifacts/arc-review.json \
+  --retry artifacts/arc-retry.json --output artifacts/arc-report.json
+~~~
+
+Supply multiple retry files in parent-first order. The report checks each
+retry against the digest and review record of the latest unsuccessful
+attempt for that role. It preserves all attempts, groups current valid
+verdicts by role, and lists unresolved roles. An invalid response remains
+inspectable in its original form. The report is a deterministic evidence
+summary. Deliberation and a maintainer decision are separate steps.
+
 ## Test without a model
 ```bash
 python -m unittest discover -s tests -v

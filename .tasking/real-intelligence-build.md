@@ -16,7 +16,7 @@ The deterministic benchmark remains a maintenance smoke test only. New primary w
 | WW-INT-005 | P0 | Four real planner implementations | Same model/tool/budget, actual reasoning traces | Not started |
 | WW-ARC-001 | P0 | Executable ARC reviewer runner | Nine real isolated model calls with traceable artifacts | First-pass validation, per-role failure records and verdict attribution implemented |
 | WW-ARC-002 | P0 | Diverse/blinded reviewer deployment | Multiple distinct model contexts/providers, frozen packet | Not started |
-| WW-ARC-003 | P0 | Independent synthesis/dissent protocol | Actual reviews, adversarial cross-exam, human decision | Not started |
+| WW-ARC-003 | P0 | Independent synthesis/dissent protocol | Actual reviews, adversarial cross-exam, human decision | Evidence-linked first-pass report implemented; cross-exam and decision pending |
 | WW-EVAL-001 | P0 | Measured model/tool budgets | Token, tool, latency, communication accounting | Partial; runtime token usage recorded |
 | WW-EVAL-002 | P0 | First true comparative intelligence benchmark | Real model, held-out fixtures, independent verifier | Blocked by 004/005/001 |
 | WW-OPS-001 | P1 | Durable trace persistence and run resumption | Kill/restart integration test | Not started |
