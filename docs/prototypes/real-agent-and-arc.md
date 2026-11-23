@@ -130,6 +130,34 @@ ollama pull gemma4:26b
 py -3 -m warwagon.arc --reviewers-file config/arc-reviewers.ollama-rtx5090.json --proposal docs/adr/0001-docs-as-code.md --output artifacts/arc-rtx5090-smoke.json
 ~~~
 
+## Record reviewer quality against a frozen checklist
+
+Define a checklist before examining model output. Use a proposal that was
+held out from prompt development, and use the same checklist bytes for each
+candidate's review of the same role. The checklist JSON includes
+`kind: arc_review_quality_checklist`, `schema_version: 1`, the
+`proposal_sha256` and `role` from the ARC report, and an `items` array
+of objects with unique `id` and `criterion` strings.
+
+The submission JSON includes `report_sha256` and `checklist_sha256`
+for the exact files. Its `judgments` object maps each item ID to an object
+with an `outcome`
+(`met`, `not_met`, or `inconclusive`) and a nonblank `rationale`.
+Keep uncertain judgments explicit and preserve disagreements across
+assessors as separate artifacts.
+
+~~~bash
+python -m warwagon.arc_scorecard artifacts/arc-report.json \
+  --checklist artifacts/checklist.json --judgments artifacts/judgments.json \
+  --assessor "reviewer-quality evaluator" --output artifacts/arc-scorecard.json
+~~~
+
+The scorecard links the exact checklist, report, review attempt, and
+judgments by digest. It records caller-supplied attribution. The command
+does not verify that the checklist was frozen before assessment or that
+the assessor was independent. The record supports comparison when the
+experiment controls and supporting artifacts establish those conditions.
+
 ## Test without a model
 ```bash
 python -m unittest discover -s tests -v
