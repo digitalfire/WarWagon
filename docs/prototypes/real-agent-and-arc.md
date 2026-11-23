@@ -105,15 +105,17 @@ Windows Ollama. The ARC runner calls reviewers serially.
 
 | Local tag | Assigned review areas | Selection rationale |
 | --- | --- | --- |
-| `qwen3.8:27b` | Agent intelligence, distributed systems, developer experience | Technical reasoning and coding, plus prior local structured review results. |
-| `gemma4:26b` | Knowledge and data, security architecture | An alternative model family for document reasoning, provenance, scope and evidence quality. |
-| `gpt-oss:20b` | Evaluation science, model inference, adversarial design review, research skepticism | A separate model family for critiquing assumptions, experiment design and inference claims. |
+| `qwen3.8:27b` | Agent intelligence, distributed systems, model inference, developer experience, adversarial design review | Technical reasoning, coding, and locally validated structured reviews. |
+| `gemma4:26b` | Knowledge and data, security architecture, evaluation science, research skepticism | An alternative model family for document reasoning, evidence quality and critique. |
 
-Each published quantization is roughly 14–18 GB on disk. Runtime memory
+The selected local model packages are roughly 18–19 GB on disk each. Runtime memory
 also depends on the context window, backend buffers and other GPU workloads.
 The role assignments are initial hypotheses for architecture review quality.
-The docs-as-code ADR is a compatibility test. Specialist rankings require
-held-out proposals and repeated comparative review.
+The docs-as-code ADR is a compatibility test. In the first trial,
+`gpt-oss:20b` returned JSON that failed schema validation on four assigned
+roles. Qwen and Gemma passed all nine role checks across the first pass
+and targeted retries. Specialist rankings require held-out proposals and
+repeated comparative review.
 
 Sources: [Qwen model card](https://huggingface.co/Qwen/Qwen3.8-27B),
 [Gemma model card](https://huggingface.co/google/gemma-4-26B-A4B),
@@ -125,7 +127,6 @@ and Ollama's [Qwen](https://ollama.com/library/qwen3.8:27b),
 ~~~powershell
 ollama pull qwen3.8:27b
 ollama pull gemma4:26b
-ollama pull gpt-oss:20b
 py -3 -m warwagon.arc --reviewers-file config/arc-reviewers.ollama-rtx5090.json --proposal docs/adr/0001-docs-as-code.md --output artifacts/arc-rtx5090-smoke.json
 ~~~
 

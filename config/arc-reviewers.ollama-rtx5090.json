@@ -16,11 +16,11 @@
     "base_url": "http://127.0.0.1:11434/v1"
   },
   "evaluation-science": {
-    "model": "gpt-oss:20b",
+    "model": "gemma4:26b",
     "base_url": "http://127.0.0.1:11434/v1"
   },
   "model-inference": {
-    "model": "gpt-oss:20b",
+    "model": "qwen3.8:27b",
     "base_url": "http://127.0.0.1:11434/v1"
   },
   "developer-experience": {
@@ -28,11 +28,11 @@
     "base_url": "http://127.0.0.1:11434/v1"
   },
   "adversarial-review": {
-    "model": "gpt-oss:20b",
+    "model": "qwen3.8:27b",
     "base_url": "http://127.0.0.1:11434/v1"
   },
   "research-skeptic": {
-    "model": "gpt-oss:20b",
+    "model": "gemma4:26b",
     "base_url": "http://127.0.0.1:11434/v1"
   }
 }
