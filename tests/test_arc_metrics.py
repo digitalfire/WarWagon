@@ -31,9 +31,9 @@ class MetricsTests(TestCase):
             "record": {"role": role, "status": status, **measurements},
         }
 
-    def metrics(self):
+    def metrics(self, **options):
         self.report_path.write_text(json.dumps(self.report), encoding="utf-8")
-        return build_metrics(self.report_path)
+        return build_metrics(self.report_path, **options)
 
     def test_counts_failed_and_retried_attempts_with_partial_measurements(self):
         self.report["attempts_by_role"][self.role] = [
@@ -87,6 +87,44 @@ class MetricsTests(TestCase):
         }
         self.assertTrue(all(field == unknown for field in result["tokens"].values()))
         self.assertEqual(result["elapsed_seconds"], unknown)
+
+    def test_breakdown_attributes_retries_and_missing_telemetry_to_configured_labels(self):
+        attempts = self.report["attempts_by_role"]
+        attempts[self.role] = [
+            self.attempt(self.role, "request_failed", "b" * 64, model="model-a"),
+            self.attempt(
+                self.role, "invalid_response", "c" * 64, model="model-a",
+                response_model="served-version", usage={"total_tokens": 8},
+            ),
+            self.attempt(
+                self.role, "valid", "d" * 64, model="model-b",
+                elapsed_seconds=0.5, usage={"total_tokens": 0},
+            ),
+        ]
+        other_roles = [role for role in ROLES if role != self.role]
+        attempts[other_roles[0]][0]["record"]["model"] = " "
+        attempts[other_roles[1]][0]["record"]["model"] = 42
+        attempts[other_roles[2]][0]["record"]["model"] = "unknown"
+
+        default = self.metrics()
+        self.assertNotIn("by_configured_model", default)
+        result = self.metrics(by_configured_model=True)
+        groups = {group["configured_model"]: group for group in result.pop("by_configured_model")}
+        self.assertEqual(result, default)
+        self.assertEqual(set(groups), {"model-a", "model-b", "unknown", None})
+        self.assertEqual(groups["model-a"]["attempts_by_status"], {
+            "valid": 0, "request_failed": 1, "invalid_response": 1,
+        })
+        self.assertEqual(groups["model-a"]["retry_attempt_count"], 1)
+        self.assertEqual(groups["model-a"]["tokens"]["total_tokens"], {
+            "observed_total": 8, "reported_attempt_count": 1, "missing_attempt_count": 1,
+        })
+        self.assertIsNone(groups["model-a"]["elapsed_seconds"]["observed_total"])
+        self.assertEqual(groups["model-b"]["retry_attempt_count"], 1)
+        self.assertEqual(groups["model-b"]["tokens"]["total_tokens"]["observed_total"], 0)
+        self.assertEqual(groups["model-b"]["elapsed_seconds"]["observed_total"], 0.5)
+        self.assertEqual(groups[None]["invocation_attempt_count"], len(ROLES) - 2)
+        self.assertEqual(groups["unknown"]["invocation_attempt_count"], 1)
 
     def test_rejects_wrong_schema_and_mismatched_attempt_role(self):
         self.report["schema_version"] = True

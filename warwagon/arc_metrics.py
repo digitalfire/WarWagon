@@ -4,6 +4,10 @@ Run python -m warwagon.arc_metrics <ARC report.json> to write JSON to stdout.
 Metric totals cover reported values only. A null total means no attempt
 reported a usable value. Timings are summed attempt durations, not wall-clock
 runtime. A failed attempt may not have reached the provider.
+
+Use --by-configured-model to break down attempts by recorded configuration
+label. A null configured model identifies attempts without a usable label.
+A configuration label does not establish provider or model identity.
 """
 
 import argparse
@@ -84,15 +88,13 @@ def summarize(values, attempt_count, *, sum_values=sum):
     }
 
 
-def build_metrics(report_path):
-    raw = report_path.read_bytes()
-    report = json.loads(raw)
+def summarize_attempts(attempts):
     status_counts = dict.fromkeys(STATUSES, 0)
     tokens = {field: [] for field in TOKEN_FIELDS}
     elapsed = []
     retry_count = 0
 
-    for index, record in report_attempts(report):
+    for index, record in attempts:
         status_counts[record["status"]] += 1
         retry_count += index > 0
         usage = record.get("usage")
@@ -107,10 +109,6 @@ def build_metrics(report_path):
 
     attempt_count = sum(status_counts.values())
     return {
-        "kind": "arc_attempt_metrics",
-        "schema_version": 1,
-        "report_sha256": hashlib.sha256(raw).hexdigest(),
-        "proposal_sha256": report["proposal_sha256"],
         "invocation_attempt_count": attempt_count,
         "retry_attempt_count": retry_count,
         "attempts_by_status": status_counts,
@@ -119,12 +117,40 @@ def build_metrics(report_path):
     }
 
 
+def build_metrics(report_path, *, by_configured_model=False):
+    raw = report_path.read_bytes()
+    report = json.loads(raw)
+    attempts = list(report_attempts(report))
+    metrics = {
+        "kind": "arc_attempt_metrics",
+        "schema_version": 1,
+        "report_sha256": hashlib.sha256(raw).hexdigest(),
+        "proposal_sha256": report["proposal_sha256"],
+        **summarize_attempts(attempts),
+    }
+    if by_configured_model:
+        groups = {}
+        for index, record in attempts:
+            label = record.get("model")
+            model = label if isinstance(label, str) and label.strip() else None
+            groups.setdefault(model, []).append((index, record))
+        metrics["by_configured_model"] = [
+            {"configured_model": model, **summarize_attempts(group)}
+            for model, group in groups.items()
+        ]
+    return metrics
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("report", type=Path, help="ARC v1 first-pass report with attempt history")
+    parser.add_argument(
+        "--by-configured-model", action="store_true",
+        help="include attempt metrics grouped by recorded configured model label",
+    )
     args = parser.parse_args()
     try:
-        metrics = build_metrics(args.report)
+        metrics = build_metrics(args.report, by_configured_model=args.by_configured_model)
     except (OSError, ValueError) as exc:
         parser.exit(2, f"{exc}\n")
     print(json.dumps(metrics, indent=2))
