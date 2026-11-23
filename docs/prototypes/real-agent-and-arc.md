@@ -22,6 +22,15 @@ python -m warwagon.arc --model "$WW_MODEL" --proposal docs/rfcs/RFC-0001-planner
 ```
 For separate reviewer models/providers, supply `--reviewers-file config/arc-reviewers.example.json` after replacing the example model IDs with actual installed models and endpoint URLs. Nine separate API calls use isolated message histories, role-specific instructions and the same frozen proposal file. Outputs include exact model name, proposal digest, raw response, usage and prompt digest. These are real calls when an actual provider is configured, but using one model with nine prompts is **not independent-model consensus**. A full council requires diverse independent model/provider runs, blind cross-review, critic synthesis, actual recorded dissent and maintainer approval.
 
+ARC validates each first-pass response against the expected verdicts and four lists.
+A failed request or invalid response stays in the artifact under its role, and
+later reviewers still run with fresh message histories. The command exits with
+status 1 if any role lacks a valid review. Compare `verdict_roles` to locate
+disagreement, then read the individual critiques for the reasons behind it.
+Endpoint hashes identify configured endpoints without exposing full URLs.
+Provider-reported model names are recorded when supplied. Multiple endpoint
+or model labels alone cannot establish independent model weights.
+
 ## Test without a model
 ```bash
 python -m unittest discover -s tests -v
