@@ -30,6 +30,59 @@ class ReviewTests(unittest.TestCase):
         self.assertEqual(one["status"], "valid")
         self.assertEqual(one["review"]["verdict"], "needs-research")
 
+    def test_response_model_and_fingerprint_are_provider_labels(self):
+        reviewer = MockReviewer()
+        response = reviewer.complete([])
+        response.update(model=" resolved-model ", system_fingerprint="fp_001")
+        reviewer.complete = lambda messages: response
+        record = review(reviewer, "evaluation-science", "Frozen")
+        self.assertEqual(record["model"], "mock-reviewer")
+        self.assertEqual(record["response_model"], "resolved-model")
+        self.assertEqual(record["response_system_fingerprint"], "fp_001")
+        response.update(model={}, system_fingerprint=" ")
+        record = review(reviewer, "evaluation-science", "Frozen")
+        self.assertIsNone(record["response_model"])
+        self.assertIsNone(record["response_system_fingerprint"])
+
+    @patch("warwagon.arc.ChatModel")
+    def test_configured_aliases_and_reported_deployments_are_counted_separately(self, model):
+        first_role, missing_role = list(ROLES)[:2]
+
+        def make_reviewer(base_url, model, *, api_key):
+            reviewer = MockReviewer()
+            reviewer.base_url = base_url
+            reviewer.model = model
+            response = reviewer.complete([])
+            if model != "unknown-alias":
+                response["model"] = "provider-model"
+            reviewer.complete = lambda messages: response
+            return reviewer
+
+        model.side_effect = make_reviewer
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            proposal = root / "proposal.md"
+            proposal.write_text("Frozen", encoding="utf-8")
+            output = root / "result.json"
+            profiles = root / "profiles.json"
+            profiles.write_text(json.dumps({
+                role: {
+                    "base_url": "https://other.example/v1" if role == first_role else "http://localhost/v1",
+                    "model": "unknown-alias" if role == missing_role else role,
+                }
+                for role in ROLES
+            }), encoding="utf-8")
+            with patch("sys.argv", [
+                "arc", "--proposal", str(proposal), "--reviewers-file", str(profiles),
+                "--output", str(output),
+            ]):
+                self.assertEqual(main(), 0)
+            result = json.loads(output.read_bytes())
+        self.assertEqual(result["configured_endpoint_model_count"], len(ROLES))
+        self.assertEqual(result["observed_endpoint_model_count"], 2)
+        self.assertEqual(result["roles_without_reported_model"], [missing_role])
+        self.assertFalse(result["model_weight_identity_verified"])
+
     def test_malformed_review_is_retained_without_a_verdict(self):
         reviewer = MockReviewer()
         reviewer.complete = lambda messages: {"choices": [{"message": {"content": "{}"}}]}
@@ -47,6 +100,8 @@ class ReviewTests(unittest.TestCase):
         reviewer.complete = fail
         result = review(reviewer, "evaluation-science", "RFC frozen")
         self.assertEqual(result["status"], "request_failed")
+        self.assertIsNone(result["response_model"])
+        self.assertIsNone(result["response_system_fingerprint"])
         self.assertNotIn("private diagnostic", str(result))
 
     def test_accepts_one_json_fence_and_rejects_surrounding_text(self):
