@@ -35,6 +35,11 @@ See the [implementation snapshot](../docs/context/current-state.md)
 for merged changes and evidence, and [issue #7](https://github.com/digitalfire/WarWagon/issues/7)
 for the outstanding lab acceptance criterion.
 
+The [offline defensive triage calibration](../benchmarks/triage/README.md)
+establishes a severity baseline and an independent scoring path for
+synthetic alerts. Held-out comparisons and measured improvements are
+still pending.
+
 ## Build-readiness decision
 **Start coding now.** Sufficient planning exists for a vertical slice: model adapter, real tool loop, local fixture, review dispatcher. Open architectural decisions should be resolved via short, measured ADRs when a component needs them; do not hold the whole project pending a grand architecture freeze.
 

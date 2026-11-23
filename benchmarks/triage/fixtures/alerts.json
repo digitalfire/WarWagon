@@ -1,0 +1,46 @@
+{
+  "kind": "triage_alerts",
+  "schema_version": 1,
+  "alerts": [
+    {
+      "id": "A1",
+      "severity": "critical",
+      "summary": "A software deployment matches an approved maintenance change."
+    },
+    {
+      "id": "A2",
+      "severity": "high",
+      "summary": "A device's security agent stopped sending health events outside maintenance."
+    },
+    {
+      "id": "A3",
+      "severity": "medium",
+      "summary": "Privileged account activity occurred after the account owner confirmed it was unexpected."
+    },
+    {
+      "id": "A4",
+      "severity": "low",
+      "summary": "A service account completed its scheduled credential rotation."
+    },
+    {
+      "id": "A5",
+      "severity": "high",
+      "summary": "A backup monitor reported a planned exercise documented in the change calendar."
+    },
+    {
+      "id": "A6",
+      "severity": "critical",
+      "summary": "Several records corroborate unexpected access to a restricted document collection."
+    },
+    {
+      "id": "A7",
+      "severity": "medium",
+      "summary": "A duplicate availability notification matches a resolved infrastructure incident."
+    },
+    {
+      "id": "A8",
+      "severity": "low",
+      "summary": "A new endpoint identifier is associated with an unapproved privileged login."
+    }
+  ]
+}

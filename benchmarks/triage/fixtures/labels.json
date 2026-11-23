@@ -1,0 +1,39 @@
+{
+  "kind": "triage_labels",
+  "schema_version": 1,
+  "alerts_sha256": "5723fd092c5886a502013626029482423e3123e806dbd0536495c2094d8691b6",
+  "labels": [
+    {
+      "id": "A1",
+      "escalate": false
+    },
+    {
+      "id": "A2",
+      "escalate": true
+    },
+    {
+      "id": "A3",
+      "escalate": true
+    },
+    {
+      "id": "A4",
+      "escalate": false
+    },
+    {
+      "id": "A5",
+      "escalate": false
+    },
+    {
+      "id": "A6",
+      "escalate": true
+    },
+    {
+      "id": "A7",
+      "escalate": false
+    },
+    {
+      "id": "A8",
+      "escalate": true
+    }
+  ]
+}
