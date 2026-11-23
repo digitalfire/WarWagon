@@ -1,0 +1,87 @@
+{
+  "kind": "triage_labels",
+  "schema_version": 1,
+  "alerts_sha256": "828dcecb3de90594f5469908b6478e639dcc34cc013e8e9f9f1391aee61aca84",
+  "labels": [
+    {
+      "id": "H01",
+      "escalate": false,
+      "rationale": "The change record and owner agree on the maintenance window."
+    },
+    {
+      "id": "H02",
+      "escalate": true,
+      "rationale": "Post-review records confirm out-of-scope access."
+    },
+    {
+      "id": "H03",
+      "escalate": true,
+      "rationale": "The account owner and investigation confirm the session was unexpected."
+    },
+    {
+      "id": "H04",
+      "escalate": true,
+      "rationale": "Later verification confirms the change was unauthorized even though the initial alert had one source."
+    },
+    {
+      "id": "H05",
+      "escalate": false,
+      "rationale": "Later diagnostics identify a harmless monitor restart."
+    },
+    {
+      "id": "H06",
+      "escalate": false,
+      "rationale": "The duplicate belongs to an already resolved incident."
+    },
+    {
+      "id": "H07",
+      "escalate": true,
+      "rationale": "The approval covered a different resource from the one accessed."
+    },
+    {
+      "id": "H08",
+      "escalate": false,
+      "rationale": "The alert is a duplicate from a resolved ticket."
+    },
+    {
+      "id": "H09",
+      "escalate": false,
+      "rationale": "The session was within scope; identity telemetry arrived late."
+    },
+    {
+      "id": "H10",
+      "escalate": true,
+      "rationale": "The apparently similar ticket concerned a different service."
+    },
+    {
+      "id": "H11",
+      "escalate": false,
+      "rationale": "The observed difference exactly matches a documented rollout."
+    },
+    {
+      "id": "H12",
+      "escalate": false,
+      "rationale": "The delay cleared with ordinary backlog processing."
+    },
+    {
+      "id": "H13",
+      "escalate": true,
+      "rationale": "Later analyst verification confirms the anomaly; the initial copies are one source."
+    },
+    {
+      "id": "H14",
+      "escalate": true,
+      "rationale": "The loss persisted and independent follow-up confirmed an incident."
+    },
+    {
+      "id": "H15",
+      "escalate": true,
+      "rationale": "Later review found that the apparently corroborating records both described stale scope."
+    },
+    {
+      "id": "H16",
+      "escalate": false,
+      "rationale": "Later checks show ordinary transient loss with no escalation required."
+    }
+  ]
+}

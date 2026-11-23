@@ -1,4 +1,4 @@
-"""Run and score an offline severity-only alert triage benchmark."""
+"""Run and score offline defensive alert triage candidates."""
 
 import argparse
 import hashlib
@@ -35,21 +35,73 @@ def index_records(records):
     return indexed
 
 
-def run_baseline(alerts_path):
+def severity_decision(record):
+    return {"escalate": record["severity"] in ("high", "critical")}
+
+
+EVIDENCE_KINDS = (
+    "unexpected_activity", "approved_activity", "resolved_duplicate", "unconfirmed_signal",
+)
+
+
+def evidence_decision(record):
+    evidence = record.get("evidence", [])
+    if not isinstance(evidence, list):
+        raise ValueError(f"{record['id']}: evidence must be an array")
+    by_kind = {kind: [] for kind in EVIDENCE_KINDS}
+    for item in index_records(evidence).values() if evidence else ():
+        source, kind = item.get("source"), item.get("kind")
+        if not isinstance(source, str) or not source.strip() or kind not in EVIDENCE_KINDS:
+            raise ValueError(f"{record['id']}: evidence requires a nonblank source and known kind")
+        by_kind[kind].append(item)
+
+    unexpected = by_kind["unexpected_activity"]
+    context = by_kind["approved_activity"] + by_kind["resolved_duplicate"]
+
+    def supported(items):
+        return len({item["source"].strip().casefold() for item in items}) >= 2
+
+    if supported(unexpected):
+        return {
+            "escalate": True, "reason": "corroborated_unexpected_activity",
+            "evidence_ids": [item["id"] for item in unexpected],
+        }
+    if unexpected and context:
+        return {
+            "escalate": True, "reason": "conflicting_evidence",
+            "evidence_ids": [item["id"] for item in unexpected + context],
+        }
+    for kind in ("approved_activity", "resolved_duplicate"):
+        if supported(by_kind[kind]):
+            return {
+                "escalate": False, "reason": f"corroborated_{kind}",
+                "evidence_ids": [item["id"] for item in by_kind[kind]],
+            }
+    return {**severity_decision(record), "reason": "severity_fallback", "evidence_ids": []}
+
+
+def run_policy(alerts_path, strategy, decide):
     digest, artifact = read_artifact(alerts_path, "triage_alerts")
     decisions = []
     for key, record in index_records(artifact.get("alerts")).items():
-        severity = record.get("severity")
-        if severity not in SEVERITIES:
+        if record.get("severity") not in SEVERITIES:
             raise ValueError(f"{key}: invalid severity")
-        decisions.append({"id": key, "escalate": severity in ("high", "critical")})
+        decisions.append({"id": key, **decide(record)})
     return {
         "kind": "triage_decisions",
         "schema_version": 1,
-        "strategy": "severity-threshold",
+        "strategy": strategy,
         "alerts_sha256": digest,
         "decisions": decisions,
     }
+
+
+def run_baseline(alerts_path):
+    return run_policy(alerts_path, "severity-threshold", severity_decision)
+
+
+def run_candidate(alerts_path):
+    return run_policy(alerts_path, "evidence-aware", evidence_decision)
 
 
 def score(alerts_path, decisions_path, labels_path):
@@ -107,6 +159,9 @@ def main():
     baseline = commands.add_parser("baseline", help="produce decisions from alerts alone")
     baseline.add_argument("alerts", type=Path)
     baseline.add_argument("--output", required=True, type=Path)
+    candidate = commands.add_parser("candidate", help="produce evidence-aware decisions from alerts alone")
+    candidate.add_argument("alerts", type=Path)
+    candidate.add_argument("--output", required=True, type=Path)
     scorer = commands.add_parser("score", help="compare decisions with held-aside labels")
     scorer.add_argument("alerts", type=Path)
     scorer.add_argument("decisions", type=Path)
@@ -114,10 +169,11 @@ def main():
     scorer.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     try:
-        result = (
-            run_baseline(args.alerts) if args.command == "baseline"
-            else score(args.alerts, args.decisions, args.labels)
-        )
+        if args.command == "score":
+            result = score(args.alerts, args.decisions, args.labels)
+        else:
+            run = run_baseline if args.command == "baseline" else run_candidate
+            result = run(args.alerts)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with args.output.open("x", encoding="utf-8") as output:
             json.dump(result, output, indent=2)

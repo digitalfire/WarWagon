@@ -36,9 +36,11 @@ for merged changes and evidence, and [issue #7](https://github.com/digitalfire/W
 for the outstanding lab acceptance criterion.
 
 The [offline defensive triage calibration](../benchmarks/triage/README.md)
-establishes a severity baseline and an independent scoring path for
-synthetic alerts. Held-out comparisons and measured improvements are
-still pending.
+establishes a severity baseline and separate scoring path for synthetic
+alerts. The [first held-out comparison](../benchmarks/triage/held-out-result.md)
+measured higher aggregate precision and recall for the evidence-aware
+candidate, with one new critical miss on stale approval evidence.
+Freshness and scope checks remain open before live use.
 
 ## Build-readiness decision
 **Start coding now.** Sufficient planning exists for a vertical slice: model adapter, real tool loop, local fixture, review dispatcher. Open architectural decisions should be resolved via short, measured ADRs when a component needs them; do not hold the whole project pending a grand architecture freeze.
