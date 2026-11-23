@@ -96,6 +96,40 @@ challenge and proposal digests, the caller-supplied role, and each file's path,
 size, and SHA-256 digest. Keep the files with the response for verification.
 The command creates a separate record and leaves the challenge open.
 
+## Local Ollama reviewers on an RTX 5090
+
+The profile `config/arc-reviewers.ollama-rtx5090.json` uses the Windows Ollama
+server at `127.0.0.1:11434`. Run ARC from the same network namespace as the
+server. On this setup the project can stay in WSL while Windows Python calls
+Windows Ollama. The ARC runner calls reviewers serially.
+
+| Local tag | Assigned review areas | Selection rationale |
+| --- | --- | --- |
+| `qwen3.8:27b` | Agent intelligence, distributed systems, model inference, developer experience, adversarial design review | Technical reasoning, coding, and locally validated structured reviews. |
+| `gemma4:26b` | Knowledge and data, security architecture, evaluation science, research skepticism | An alternative model family for document reasoning, evidence quality and critique. |
+
+The selected local model packages are roughly 18–19 GB on disk each. Runtime memory
+also depends on the context window, backend buffers and other GPU workloads.
+The role assignments are initial hypotheses for architecture review quality.
+The docs-as-code ADR is a compatibility test. In the first trial,
+`gpt-oss:20b` returned JSON that failed schema validation on four assigned
+roles. Qwen and Gemma passed all nine role checks across the first pass
+and targeted retries. Specialist rankings require held-out proposals and
+repeated comparative review.
+
+Sources: [Qwen model card](https://huggingface.co/Qwen/Qwen3.8-27B),
+[Gemma model card](https://huggingface.co/google/gemma-4-26B-A4B),
+[GPT-OSS model card](https://huggingface.co/openai/gpt-oss-20b),
+and Ollama's [Qwen](https://ollama.com/library/qwen3.8:27b),
+[Gemma](https://ollama.com/library/gemma4:26b), and
+[GPT-OSS](https://ollama.com/library/gpt-oss:20b) listings.
+
+~~~powershell
+ollama pull qwen3.8:27b
+ollama pull gemma4:26b
+py -3 -m warwagon.arc --reviewers-file config/arc-reviewers.ollama-rtx5090.json --proposal docs/adr/0001-docs-as-code.md --output artifacts/arc-rtx5090-smoke.json
+~~~
+
 ## Test without a model
 ```bash
 python -m unittest discover -s tests -v

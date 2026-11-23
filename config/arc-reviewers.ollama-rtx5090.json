@@ -1,0 +1,38 @@
+{
+  "agent-intelligence": {
+    "model": "qwen3.8:27b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  },
+  "distributed-systems": {
+    "model": "qwen3.8:27b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  },
+  "knowledge-data": {
+    "model": "gemma4:26b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  },
+  "security-research": {
+    "model": "gemma4:26b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  },
+  "evaluation-science": {
+    "model": "gemma4:26b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  },
+  "model-inference": {
+    "model": "qwen3.8:27b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  },
+  "developer-experience": {
+    "model": "qwen3.8:27b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  },
+  "adversarial-review": {
+    "model": "qwen3.8:27b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  },
+  "research-skeptic": {
+    "model": "gemma4:26b",
+    "base_url": "http://127.0.0.1:11434/v1"
+  }
+}
