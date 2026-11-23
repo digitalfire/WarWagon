@@ -5,7 +5,7 @@ import urllib.parse
 import urllib.request
 
 class ChatModel:
-    def __init__(self, base_url: str, model: str, timeout: int = 120):
+    def __init__(self, base_url: str, model: str, timeout: int = 120, *, api_key: str | None = None):
         url = urllib.parse.urlsplit(base_url)
         if url.scheme not in ("http","https") or not url.hostname or url.username or url.password:
             raise ValueError("base_url must be an HTTP(S) URL without embedded credentials")
@@ -16,6 +16,7 @@ class ChatModel:
         self.base_url=base_url.rstrip("/")
         self.model=model
         self.timeout=timeout
+        self.api_key = api_key
 
     def complete(self, messages, tools=None):
         payload={"model":self.model,"messages":messages,"temperature":0}
@@ -24,13 +25,15 @@ class ChatModel:
             payload["tool_choice"]="auto"
         body=json.dumps(payload).encode()
         headers={"Content-Type":"application/json"}
-        key=os.getenv("WW_MODEL_API_KEY","")
+        key = self.api_key if self.api_key is not None else os.getenv("WW_MODEL_API_KEY", "")
         if key:
             headers["Authorization"]="Bearer "+key
         request=urllib.request.Request(self.base_url+"/chat/completions",
                                        data=body,headers=headers,method="POST")
         with urllib.request.urlopen(request,timeout=self.timeout) as response:
             data=json.loads(response.read(4_000_000))
+        if not isinstance(data, dict):
+            raise ValueError("model response must be a JSON object")
         if not data.get("choices"):
             raise ValueError("model returned no choices")
         return data

@@ -27,6 +27,10 @@ A failed request or invalid response stays in the artifact under its role, and
 later reviewers still run with fresh message histories. The command exits with
 status 1 if any role lacks a valid review. Compare `verdict_roles` to locate
 disagreement, then read the individual critiques for the reasons behind it.
+A single JSON code fence is accepted when it encloses the entire review.
+Reviewer profiles use the optional `api_key_env` field to name a credential
+environment variable. Profiles without that field make unauthenticated calls.
+The single-model mode still uses `WW_MODEL_API_KEY`.
 Endpoint hashes identify configured endpoints without exposing full URLs.
 Provider-reported model names are recorded when supplied. Multiple endpoint
 or model labels alone cannot establish independent model weights.

@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import time
 from urllib.parse import urlsplit
 from pathlib import Path
@@ -30,6 +31,12 @@ REVIEW_LISTS = ("strengths", "blockers", "experiments", "unknowns")
 def validate_response(output):
     if not isinstance(output, str):
         raise ValueError("review content must be a JSON string")
+    output = output.strip()
+    fence = re.fullmatch(
+        r"```(?:json)?[^\S\r\n]*\r?\n(.*?)\r?\n```", output, re.DOTALL | re.IGNORECASE
+    )
+    if fence:
+        output = fence.group(1)
     try:
         result = json.loads(output)
     except json.JSONDecodeError as exc:
@@ -121,7 +128,16 @@ def main():
                 for key in ("base_url", "model")
             ):
                 raise ValueError(f"{role} requires nonblank base_url and model strings")
-            reviewers[role] = ChatModel(profile["base_url"], profile["model"])
+            key_env = profile.get("api_key_env")
+            if key_env is not None:
+                if not isinstance(key_env, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key_env):
+                    raise ValueError(f"{role} api_key_env must be an environment variable name")
+                api_key = os.getenv(key_env)
+                if not api_key:
+                    raise ValueError(f"{role} environment variable {key_env} is unset or empty")
+            else:
+                api_key = "" if args.reviewers_file else None
+            reviewers[role] = ChatModel(profile["base_url"], profile["model"], api_key=api_key)
     except (OSError, ValueError) as exc:
         ap.error(str(exc))
 
