@@ -66,6 +66,23 @@ verdicts by role, and lists unresolved roles. An invalid response remains
 inspectable in its original form. The report is a deterministic evidence
 summary. Deliberation and a maintainer decision are separate steps.
 
+## Record an ARC challenge
+
+~~~bash
+python -m warwagon.arc_challenge artifacts/arc-report.json \
+  --role distributed-systems --field blockers --index 0 \
+  --challenger research-skeptic \
+  --challenge "The scope of the recovery blocker is unclear." \
+  --requested-evidence "List the recovery scenarios and their tests." \
+  --output artifacts/arc-challenge.json
+~~~
+
+The challenge links the frozen proposal, report, and current review attempt
+by digest and identifies the exact list item. It preserves the original text
+and requests specific evidence in a separate open record. Roles are
+caller-supplied labels. The command neither authenticates a reviewer nor
+resolves or rewrites a review.
+
 ## Test without a model
 ```bash
 python -m unittest discover -s tests -v
