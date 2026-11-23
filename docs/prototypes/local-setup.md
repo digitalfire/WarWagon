@@ -1,7 +1,7 @@
 # WarWagon local lab setup (Windows PowerShell)
 
 ## Goal
-Prove a **real locally hosted language model** can issue a structured tool call, receive an HTTP observation from the local lab, and provide evidence for a reported finding. This is the first true inference test, not a full penetration-testing benchmark.
+Prove a **real locally hosted language model** can issue a structured tool call, receive an HTTP observation from the local lab, and provide evidence for a reported finding. The harmless preflight and ARC reviews have recorded live results. The full lab acceptance run is still pending. See the [implementation snapshot](../context/current-state.md).
 
 ## Prerequisites
 - Git, Python 3.10+ (prefer 3.12), and local [Ollama](https://ollama.com/download).
@@ -28,11 +28,11 @@ $result.trace | Format-List
 
 Preflight sends one harmless structured `report_probe` call, not a security testing action. If it fails, diagnose model API/tool capability before running WarWagon.
 
-## Run ARC after agent smoke test
+## Run an ARC smoke review
 ```powershell
-py -3 -m warwagon.arc --model $env:WW_MODEL --proposal docs/rfcs/RFC-0001-planner-research-v2.md --output artifacts/arc-review.json
+py -3 -m warwagon.arc --model $env:WW_MODEL --proposal docs/adr/0001-docs-as-code.md --output artifacts/arc-review.json
 ```
-This calls the configured model nine times with distinct reviewer instructions and isolated context. It does not create consensus from independent models when only one model is configured. Use the `--reviewers-file` option to define multiple models/providers.
+This calls the configured model nine times with distinct reviewer instructions and isolated context. It does not create consensus from independent models when only one model is configured. ARC runs independently of the lab. See the [ARC runbook](real-agent-and-arc.md) for multiple reviewers and the validated local profile.
 
 ## What to report back
 - Model tag and Ollama version

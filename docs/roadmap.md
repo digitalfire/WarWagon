@@ -6,12 +6,15 @@ updated: 2026-11-23
 # WarWagon active roadmap
 
 ## Active: Build the real intelligence vertical slice
+
+See the [active queue](../.tasking/real-intelligence-build.md) for current states and the [implementation snapshot](context/current-state.md) for verified evidence.
 - WW-INT-001: actual LLM completion and tool-calling integration.
 - WW-INT-002: observable lab agent loop with trace capture.
 - WW-INT-003: controlled vulnerable local target and repeatable fixture.
-- WW-ARC-001: execute actual independent-context architecture review calls.
+- WW-ARC-001–003: run isolated architecture reviews, trace evidence and dissent, and evaluate reviewers on frozen proposals.
 - WW-INT-004: scoring agent findings (not just confirming fixture behavior).
 - WW-INT-005: alternative real agent planner strategies.
+- WW-EVAL-001: account for invocation attempts, token use, time, and tool budgets.
 - WW-EVAL-002: fixed-budget comparison on held-out real lab tasks.
 
 ## Later

@@ -4,8 +4,8 @@
 
 WarWagon is an independent community project exploring shared intelligence, graph-based planning, collaborative specialist agents, persistent evidence, adaptive model routing, and reproducible evaluation.
 
-**Status:** early architecture and research. No production implementation or released assessment engine yet.
+**Status:** the Python research prototype includes live model preflight, ARC evidence workflows, and local reviewer evaluation. The production assessment engine is still roadmap work.
 
-Architecture documents and agent handoff conventions are being prepared in the `docs/` directory. Design proposals are drafts until accepted through an Architecture Decision Record (ADR).
+See the [active build plan](.tasking/real-intelligence-build.md), [implementation snapshot](docs/context/current-state.md), and [ARC reviewer pilot](benchmarks/arc/review-index-pilot.md). Design proposals are drafts until accepted through an Architecture Decision Record (ADR).
 
 Repository: https://github.com/digitalfire/WarWagon

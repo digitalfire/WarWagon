@@ -96,6 +96,30 @@ challenge and proposal digests, the caller-supplied role, and each file's path,
 size, and SHA-256 digest. Keep the files with the response for verification.
 The command creates a separate record and leaves the challenge open.
 
+## Verify evidence and record a disposition
+
+~~~bash
+python -m warwagon.arc_verify artifacts/arc-evidence.json \
+  --challenge artifacts/arc-challenge.json --evidence 1 evidence/example.txt
+python -m warwagon.arc_disposition artifacts/arc-challenge.json artifacts/arc-evidence.json \
+  --maintainer "review decision owner" --outcome needs-evidence \
+  --rationale "A second revision example is still needed." --output artifacts/arc-disposition.json
+~~~
+
+The verifier checks explicitly supplied files against the response. Supply
+the challenge to check its link as well. The disposition records the
+decision owner's rationale. It preserves the existing records.
+
+## Summarize measured attempt usage
+
+~~~bash
+python -m warwagon.arc_metrics artifacts/arc-report.json --by-configured-model
+~~~
+
+Totals include retries and preserve missing telemetry. Summed attempt
+time differs from end-to-end wall time. Configured model labels support
+grouping, with model-weight identity still unverified.
+
 ## Local Ollama reviewers on an RTX 5090
 
 The profile `config/arc-reviewers.ollama-rtx5090.json` uses the Windows Ollama
@@ -127,6 +151,7 @@ and Ollama's [Qwen](https://ollama.com/library/qwen3.8:27b),
 ~~~powershell
 ollama pull qwen3.8:27b
 ollama pull gemma4:26b
+py -3 -m warwagon.arc --check-config --reviewers-file config/arc-reviewers.ollama-rtx5090.json
 py -3 -m warwagon.arc --reviewers-file config/arc-reviewers.ollama-rtx5090.json --proposal docs/adr/0001-docs-as-code.md --output artifacts/arc-rtx5090-smoke.json
 ~~~
 

@@ -11,7 +11,17 @@ Repository: `digitalfire/WarWagon`.
 Primary task: [GitHub issue #7](https://github.com/digitalfire/WarWagon/issues/7).
 Read: `AGENTS.md`, `docs/context/README.md`, `docs/context/project-charter.md`, `docs/context/decision-history.md`, `docs/context/current-state.md`, `docs/prototypes/local-setup.md`, `.tasking/real-intelligence-build.md`.
 
-## Execution, in priority order
+## Current progress
+
+Issue #7 preserves the original acceptance order. The live inference
+preflight has passed. ARC has produced structured reviews, retries, and
+evidence-linked artifacts, and the reviewer pilot has one graded case.
+The [active queue](../../.tasking/real-intelligence-build.md) and
+[verified snapshot](current-state.md) track completed evidence and
+remaining work. The live model-driven lab acceptance criterion remains
+open.
+
+## Original execution order from issue #7
 1. **Preflight real LLM**. Discover actual model/API runtime availability, run preflight and capture model/version/usage or record precise environment blocker. Don't substitute mock success.
 2. **Real lab agent**. Run against loopback training application. Confirm actual model-selected tool calls, observations and evidence-backed output. Keep trace and non-secret run manifest; distinguish fixture oracle from credited discovery.
 3. **Real ARC**. Run nine isolated first-pass review roles. When available, allocate distinct models or providers, record source commit/prompt/outputs and disagreement. Do not imply external domain experts or independent consensus if the same model answers all prompts.

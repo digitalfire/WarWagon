@@ -11,6 +11,11 @@
 - [Research notes](research/README.md)
 - [RFC proposals](rfcs/README.md)
 - [Roadmap](roadmap.md)
+- [Implementation snapshot](context/current-state.md)
+- [Engineering milestones](plans/real-intelligence-milestones.md)
+- [Local setup](prototypes/local-setup.md)
+- [ARC and prototype runbook](prototypes/real-agent-and-arc.md)
+- [ARC reviewer evaluation](../benchmarks/arc/README.md)
 - [Tasking conventions](../.tasking/README.md)
 - [Coding-agent handoff](../AGENTS.md)
 
