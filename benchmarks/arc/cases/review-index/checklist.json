@@ -1,0 +1,28 @@
+{
+  "kind": "arc_review_quality_checklist",
+  "schema_version": 1,
+  "proposal_sha256": "221c776beaba38ba550f265d59668d964bd0a6bfaa1fbbee1abcea48d041900b",
+  "role": "evaluation-science",
+  "items": [
+    {
+      "id": "freshness",
+      "criterion": "Identify that retries or evidence responses can change the index without invalidating its cache entry, or directly challenge the stated freshness guarantee on those grounds."
+    },
+    {
+      "id": "snapshot",
+      "criterion": "Identify that sequential file reads can mix revisions, and explain the effect on reported state or counts."
+    },
+    {
+      "id": "sample-parity",
+      "criterion": "Identify the use of different implementation-selected proposals, and propose a fixed matched corpus or trace."
+    },
+    {
+      "id": "failure-accounting",
+      "criterion": "Identify successful-request-only latency as a source of bias and require independent timeout or error reporting."
+    },
+    {
+      "id": "repeatability",
+      "criterion": "Challenge a single run or a latency-only promotion rule and propose a concrete repeated measurement or correctness gate."
+    }
+  ]
+}

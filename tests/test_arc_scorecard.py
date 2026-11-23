@@ -4,7 +4,17 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from warwagon.arc_scorecard import build_scorecard
+from warwagon.arc_scorecard import build_scorecard, read_checklist
+
+
+class BenchmarkCaseTests(TestCase):
+    def test_checked_in_checklist_matches_frozen_proposal(self):
+        case = Path(__file__).resolve().parents[1] / "benchmarks/arc/cases/review-index"
+        _, checklist, items = read_checklist(case / "checklist.json")
+        raw_proposal = (case / "proposal.md").read_bytes()
+        self.assertEqual(checklist["proposal_sha256"], hashlib.sha256(raw_proposal).hexdigest())
+        self.assertEqual(checklist["role"], "evaluation-science")
+        self.assertTrue(items)
 
 
 class ScorecardTests(TestCase):
