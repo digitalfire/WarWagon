@@ -14,7 +14,7 @@ python -m warwagon.agent --model "$WW_MODEL" --output artifacts/lab-agent-run.js
 ```
 The runner starts a deliberately vulnerable HTTP teaching fixture on `127.0.0.1` with ephemeral port and restricts its tool to the fixture's three paths. It lets the real model select tool calls, inspects returned observations, and records traces and token usage if the model reports it.
 
-The independent fixture verification validates that the issue exists. **It does not prove the agent discovered the issue**; future scoring must correlate agent observations and a claim against verifiable evidence.
+The independent fixture verification validates that the issue exists. A separate conservative agent-discovery scorer now requires a concrete reflected HTML tool observation **and** an agent finding statement. This is an early deterministic scoring rule, not a blinded expert verifier or general vulnerability scorer.
 
 ## Run actual ARC first-pass reviews
 ```bash
@@ -31,7 +31,7 @@ Unit tests use a clearly labeled test-double, not an LLM.
 ## Explicit gaps before we can compare planner intelligence
 - Current agent is a **single real-model tool loop**, not four implemented real planning strategies.
 - The only available target is a tiny controlled HTML-encoding fixture; no comprehensive web-app assessment functionality.
-- No independent agent finding scorer yet; fixture verification alone does not earn agent credit.
+- A minimal agent-observation scorer is present; independent held-out scoring and robust false-positive evaluation remain pending.
 - No durable coordination, multi-agent intelligence, graphical ARC console, model benchmark sample size, or production release.
 - ARC dispatch is an executable command, but not a deployed always-on agent service and not a completed council verdict.
 - Current results should not be represented as autonomous vulnerability-discovery benchmarks.

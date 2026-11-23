@@ -3,6 +3,7 @@ import unittest
 from warwagon.lab import FixtureServer, LabTool, verify_finding
 from warwagon.agent import AgentRunner
 from warwagon.model import ChatModel
+from warwagon.scoring import score_discovery
 
 class FakeModel:
     model="scripted-test-double"
@@ -30,6 +31,9 @@ class LocalLabTests(unittest.TestCase):
             self.assertEqual(output["trace"][0]["kind"],"tool")
             self.assertIn("<b>WW_PROBE</b>",output["trace"][0]["result"]["body"])
             self.assertEqual(output["usage"]["total_tokens"],18)
+            s=score_discovery(output["trace"],verify_finding(srv.port))
+            self.assertTrue(s["credited"])
+            self.assertFalse(score_discovery([{"kind":"final","content":"found XSS!"}],verify_finding(srv.port))["credited"])
     def test_model_requires_valid_transport(self):
         with self.assertRaises(ValueError):
             ChatModel("http://example.org/v1","sample")
