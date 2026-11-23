@@ -1,0 +1,24 @@
+name: Planner reference benchmark
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  planner-reference:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run reference harness unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Run reproducible simulated comparisons
+        run: python -m benchmarks.planner.reference --seeds 5 --budget 16 --workers 4 --output planner-results.json
+      - name: Archive raw synthetic results
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-planner-results
+          path: planner-results.json
