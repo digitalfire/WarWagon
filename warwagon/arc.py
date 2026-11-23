@@ -38,17 +38,23 @@ def main():
     ap.add_argument("--model",default=os.getenv("WW_MODEL",""))
     ap.add_argument("--base-url",default=os.getenv("WW_MODEL_BASE_URL","http://127.0.0.1:11434/v1"))
     ap.add_argument("--output",type=Path,default=Path("artifacts/arc-review.json"))
+    ap.add_argument("--reviewers-file",type=Path,help="JSON map of role to {model,base_url}; permits distinct model/provider reviewers")
     args=ap.parse_args()
-    if not args.model: ap.error("provide --model or WW_MODEL")
+    if not args.model and not args.reviewers_file: ap.error("provide --model or --reviewers-file")
     proposal=args.proposal.read_text(encoding="utf-8")
     if len(proposal)>120000: ap.error("proposal exceeds 120k characters; freeze a smaller packet")
-    model=ChatModel(args.base_url,args.model)
+    profiles=json.loads(args.reviewers_file.read_text(encoding="utf-8")) if args.reviewers_file else {}
+    if profiles and set(profiles) != set(ROLES):
+        ap.error("reviewers-file must contain all nine known roles")
     reviews=[]
     for role in ROLES:
+        profile=profiles.get(role,{"model":args.model,"base_url":args.base_url})
+        model=ChatModel(profile["base_url"],profile["model"])
         reviews.append(review(model,role,proposal))
         print("review completed:",role)
     payload={"kind":"real_model_first_pass_reviews","proposal":str(args.proposal),
              "proposal_sha256":hashlib.sha256(proposal.encode()).hexdigest(),
+             "reviewer_model_count":len(set((profiles.get(role) or {"model":args.model,"base_url":args.base_url})["model"] for role in ROLES)),
              "model":args.model,
              "warning":"Separate model calls and contexts; if the same model handles all roles, this is NOT independent model consensus. No deliberation/synthesis or maintainer decision is implied.",
              "reviews":reviews}

@@ -20,7 +20,7 @@ The independent fixture verification validates that the issue exists. A separate
 ```bash
 python -m warwagon.arc --model "$WW_MODEL" --proposal docs/rfcs/RFC-0001-planner-research-v2.md --output artifacts/arc-review.json
 ```
-Nine separate API calls use isolated message histories, role-specific instructions and the same frozen proposal file. Outputs include exact model name, proposal digest, raw response, usage and prompt digest. These are real calls when an actual provider is configured, but using one model with nine prompts is **not independent-model consensus**. A full council requires diverse independent model/provider runs, blind cross-review, critic synthesis, actual recorded dissent and maintainer approval.
+For separate reviewer models/providers, supply `--reviewers-file config/arc-reviewers.example.json` after replacing the example model IDs with actual installed models and endpoint URLs. Nine separate API calls use isolated message histories, role-specific instructions and the same frozen proposal file. Outputs include exact model name, proposal digest, raw response, usage and prompt digest. These are real calls when an actual provider is configured, but using one model with nine prompts is **not independent-model consensus**. A full council requires diverse independent model/provider runs, blind cross-review, critic synthesis, actual recorded dissent and maintainer approval.
 
 ## Test without a model
 ```bash
