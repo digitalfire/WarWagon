@@ -1,0 +1,208 @@
+{
+  "kind": "triage_alerts",
+  "schema_version": 1,
+  "alerts": [
+    {
+      "id": "Q01",
+      "severity": "medium",
+      "scope": "service/expense",
+      "summary": "An audit entry flags a privileged role assignment.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q01-E1",
+          "kind": "unexpected_activity",
+          "source": "access-audit",
+          "scope": "service/expense",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q02",
+      "severity": "low",
+      "scope": "service/reporting",
+      "summary": "A monitor flags an export at an unusual hour.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q02-E1",
+          "kind": "unexpected_activity",
+          "source": "export-monitor",
+          "scope": "service/reporting",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q03",
+      "severity": "medium",
+      "scope": "service/printing",
+      "summary": "An alert references earlier printer controller observations.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q03-E1",
+          "kind": "unexpected_activity",
+          "source": "configuration-audit",
+          "scope": "service/printing",
+          "recorded_at": "2026-11-19T09:15:00Z"
+        },
+        {
+          "id": "Q03-E2",
+          "kind": "unexpected_activity",
+          "source": "fleet-observer",
+          "scope": "service/printing",
+          "recorded_at": "2026-11-19T09:15:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q04",
+      "severity": "low",
+      "scope": "service/directory",
+      "summary": "A directory audit entry's clock is ahead of the alert.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q04-E1",
+          "kind": "unexpected_activity",
+          "source": "directory-audit",
+          "scope": "service/directory",
+          "recorded_at": "2026-11-21T16:08:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q05",
+      "severity": "medium",
+      "scope": "service/warehouse",
+      "summary": "A copied operator note flags an unexpected inventory job.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q05-E1",
+          "kind": "unexpected_activity",
+          "source": "operator-note",
+          "scope": "service/warehouse"
+        }
+      ]
+    },
+    {
+      "id": "Q06",
+      "severity": "medium",
+      "scope": "service/payments",
+      "summary": "An imported service alert lacks its observation time.",
+      "evidence": [
+        {
+          "id": "Q06-E1",
+          "kind": "unexpected_activity",
+          "source": "payments-audit",
+          "scope": "service/payments",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q07",
+      "severity": "high",
+      "scope": "service/messaging",
+      "summary": "The only initial signal is a prolonged loss of logging.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q07-E1",
+          "kind": "unconfirmed_signal",
+          "source": "log-monitor",
+          "scope": "service/messaging",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q08",
+      "severity": "critical",
+      "scope": "service/archive",
+      "summary": "An archive monitor reports an unexpected state change during maintenance.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q08-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "scope": "service/archive",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        },
+        {
+          "id": "Q08-E2",
+          "kind": "approved_activity",
+          "source": "duty-supervisor",
+          "scope": "service/archive",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q09",
+      "severity": "high",
+      "scope": "service/scheduling",
+      "summary": "A restart alarm arrives with two maintenance records.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q09-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "scope": "service/scheduling",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        },
+        {
+          "id": "Q09-E2",
+          "kind": "approved_activity",
+          "source": "service-owner",
+          "scope": "service/scheduling",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q10",
+      "severity": "medium",
+      "scope": "service/fulfillment",
+      "summary": "A monitor associates the alert with a separate returns-service audit.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q10-E1",
+          "kind": "unexpected_activity",
+          "source": "returns-audit",
+          "scope": "service/returns",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        }
+      ]
+    },
+    {
+      "id": "Q11",
+      "severity": "low",
+      "scope": "service/knowledge-base",
+      "summary": "A delayed informational heartbeat arrives.",
+      "observed_at": "2026-11-21T16:00:00Z"
+    },
+    {
+      "id": "Q12",
+      "severity": "medium",
+      "scope": "service/finance",
+      "summary": "A single monitor reports an unconfirmed protective-control health change.",
+      "observed_at": "2026-11-21T16:00:00Z",
+      "evidence": [
+        {
+          "id": "Q12-E1",
+          "kind": "unconfirmed_signal",
+          "source": "health-monitor",
+          "scope": "service/finance",
+          "recorded_at": "2026-11-21T15:40:00Z"
+        }
+      ]
+    }
+  ]
+}
