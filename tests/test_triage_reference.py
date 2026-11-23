@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from benchmarks.triage.reference import evidence_decision, run_baseline, score
+from benchmarks.triage.reference import evidence_decision, guarded_evidence_decision, run_baseline, run_guarded_candidate, score
 
 
 FIXTURES = Path(__file__).resolve().parents[1] / "benchmarks/triage/fixtures"
@@ -84,3 +84,65 @@ class TriageReferenceTests(TestCase):
         for evidence in ([{"id": "value", "kind": "unconfirmed_signal", "source": ""}], None):
             with self.subTest(evidence=evidence), self.assertRaises(ValueError):
                 evidence_decision({"id": "calibration", "severity": "medium", "evidence": evidence})
+
+
+    def test_critical_severity_cannot_be_deferred_by_evidence(self):
+        alert = {"id": "critical-safeguard", "severity": "critical", "evidence": [
+            {"id": "change", "kind": "approved_activity", "source": "calendar"},
+            {"id": "owner", "kind": "approved_activity", "source": "owner"},
+        ]}
+        self.assertFalse(evidence_decision(alert)["escalate"])
+        self.assertEqual(guarded_evidence_decision(alert), {
+            "escalate": True, "reason": "critical_severity_guard", "evidence_ids": [],
+        })
+
+    def test_only_fresh_in_scope_evidence_can_override_severity(self):
+        alert = {
+            "id": "filter", "severity": "high", "scope": "report-service",
+            "observed_at": "2026-11-23T12:00:00Z",
+        }
+        evidence = {"kind": "approved_activity", "scope": "report-service",
+                    "recorded_at": "2026-11-22T12:00:00Z"}
+        alert["evidence"] = [
+            {**evidence, "id": "boundary", "source": "calendar"},
+            {**evidence, "id": "stale", "source": "history", "recorded_at": "2026-11-22T11:59:59Z"},
+            {**evidence, "id": "outside", "source": "other-owner", "scope": "other-service"},
+            {**evidence, "id": "future", "source": "future", "recorded_at": "2026-11-23T12:00:01Z"},
+            {**evidence, "id": "naive", "source": "clock", "recorded_at": "2026-11-23T11:00:00"},
+        ]
+        result = guarded_evidence_decision(alert)
+        self.assertTrue(result["escalate"])
+        self.assertEqual(result["reason"], "severity_fallback")
+        self.assertEqual(result["excluded_evidence"], [
+            {"id": "stale", "reason": "stale_evidence"},
+            {"id": "outside", "reason": "scope_mismatch"},
+            {"id": "future", "reason": "future_evidence"},
+            {"id": "naive", "reason": "invalid_evidence_timestamp"},
+        ])
+        alert["evidence"].append(
+            {**evidence, "id": "owner", "source": "owner", "recorded_at": "2026-11-23T06:00:00-05:00"},
+        )
+        result = guarded_evidence_decision(alert)
+        self.assertFalse(result["escalate"])
+        self.assertEqual(result["evidence_ids"], ["boundary", "owner"])
+
+
+    def test_guarded_strategy_has_no_critical_misses_on_fresh_holdout(self):
+        holdout = FIXTURES.parent / "guarded-held-out"
+        alerts = holdout / "alerts.json"
+        labels = holdout / "labels.json"
+        run = run_guarded_candidate(alerts)
+        self.write_decisions(run)
+        result = score(alerts, self.decisions, labels)
+        self.assertEqual(result["missed_critical_alert_ids"], [])
+        critical_ids = {
+            alert["id"]
+            for alert in json.loads(alerts.read_bytes())["alerts"]
+            if alert["severity"] == "critical"
+        }
+        self.assertTrue(critical_ids)
+        self.assertTrue(all(
+            decision["escalate"]
+            for decision in run["decisions"]
+            if decision["id"] in critical_ids
+        ))

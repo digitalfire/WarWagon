@@ -40,7 +40,11 @@ establishes a severity baseline and separate scoring path for synthetic
 alerts. The [first held-out comparison](../benchmarks/triage/held-out-result.md)
 measured higher aggregate precision and recall for the evidence-aware
 candidate, with one new critical miss on stale approval evidence.
-Freshness and scope checks remain open before live use.
+A [fresh held-out comparison](../benchmarks/triage/guarded-held-out-result.md)
+tested age, scope, and critical-alert protection against both previous
+strategies. The guarded offline candidate had zero critical misses in
+that set. Real telemetry validation and production integration remain
+pending.
 
 ## Build-readiness decision
 **Start coding now.** Sufficient planning exists for a vertical slice: model adapter, real tool loop, local fixture, review dispatcher. Open architectural decisions should be resolved via short, measured ADRs when a component needs them; do not hold the whole project pending a grand architecture freeze.

@@ -1,0 +1,338 @@
+{
+  "kind": "triage_alerts",
+  "schema_version": 1,
+  "alerts": [
+    {
+      "id": "G01",
+      "severity": "critical",
+      "summary": "Two records describe an earlier migration of the reporting service.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G01-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G01-E2",
+          "kind": "approved_activity",
+          "source": "duty-owner",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G02",
+      "severity": "critical",
+      "summary": "A critical reporting alert coincides with an inventory maintenance window.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G02-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/inventory"
+        },
+        {
+          "id": "G02-E2",
+          "kind": "approved_activity",
+          "source": "duty-owner",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/inventory"
+        }
+      ]
+    },
+    {
+      "id": "G03",
+      "severity": "critical",
+      "summary": "A high-impact monitor fires during an explicitly authorized exercise.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G03-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G03-E2",
+          "kind": "approved_activity",
+          "source": "duty-owner",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G04",
+      "severity": "critical",
+      "summary": "Critical health loss is reported with no attached context.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": []
+    },
+    {
+      "id": "G05",
+      "severity": "high",
+      "summary": "A service alarm occurs after a prior change record expired.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G05-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G05-E2",
+          "kind": "approved_activity",
+          "source": "duty-owner",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G06",
+      "severity": "high",
+      "summary": "An alarm for reporting includes approvals for an inventory change.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G06-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/inventory"
+        },
+        {
+          "id": "G06-E2",
+          "kind": "approved_activity",
+          "source": "duty-owner",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/inventory"
+        }
+      ]
+    },
+    {
+      "id": "G07",
+      "severity": "medium",
+      "summary": "Two observers flag an unexpected reporting state change.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G07-E1",
+          "kind": "unexpected_activity",
+          "source": "audit-record",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G07-E2",
+          "kind": "unexpected_activity",
+          "source": "service-observer",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G08",
+      "severity": "low",
+      "summary": "One audit source flags an unexpected reporting change.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G08-E1",
+          "kind": "unexpected_activity",
+          "source": "audit-record",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G09",
+      "severity": "low",
+      "summary": "Historic warnings recur in a reporting alert.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G09-E1",
+          "kind": "unexpected_activity",
+          "source": "audit-record",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G09-E2",
+          "kind": "unexpected_activity",
+          "source": "service-observer",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G10",
+      "severity": "medium",
+      "summary": "Two corroborating observations concern the inventory service.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G10-E1",
+          "kind": "unexpected_activity",
+          "source": "audit-record",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/inventory"
+        },
+        {
+          "id": "G10-E2",
+          "kind": "unexpected_activity",
+          "source": "service-observer",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/inventory"
+        }
+      ]
+    },
+    {
+      "id": "G11",
+      "severity": "high",
+      "summary": "An alert coincides with current, in-scope planned reporting work.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G11-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G11-E2",
+          "kind": "approved_activity",
+          "source": "duty-owner",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G12",
+      "severity": "high",
+      "summary": "A benign recurrence only has historic approval attached.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G12-E1",
+          "kind": "approved_activity",
+          "source": "change-register",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G12-E2",
+          "kind": "approved_activity",
+          "source": "duty-owner",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G13",
+      "severity": "low",
+      "summary": "Two observations are timestamped after the reporting alert.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G13-E1",
+          "kind": "unexpected_activity",
+          "source": "audit-record",
+          "recorded_at": "2026-11-23T12:05:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G13-E2",
+          "kind": "unexpected_activity",
+          "source": "service-observer",
+          "recorded_at": "2026-11-23T12:05:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G14",
+      "severity": "medium",
+      "summary": "Only older corroboration is attached to a genuine recurring problem.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G14-E1",
+          "kind": "unexpected_activity",
+          "source": "audit-record",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        },
+        {
+          "id": "G14-E2",
+          "kind": "unexpected_activity",
+          "source": "service-observer",
+          "recorded_at": "2026-11-21T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G15",
+      "severity": "high",
+      "summary": "A transient service monitor notification has no corroborated evidence.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G15-E1",
+          "kind": "unconfirmed_signal",
+          "source": "monitor",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    },
+    {
+      "id": "G16",
+      "severity": "low",
+      "summary": "A delayed informational queue update has no corroborated evidence.",
+      "scope": "finance/reporting",
+      "observed_at": "2026-11-23T12:00:00Z",
+      "evidence": [
+        {
+          "id": "G16-E1",
+          "kind": "unconfirmed_signal",
+          "source": "queue-monitor",
+          "recorded_at": "2026-11-23T10:00:00Z",
+          "scope": "finance/reporting"
+        }
+      ]
+    }
+  ]
+}

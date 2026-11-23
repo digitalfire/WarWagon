@@ -1,6 +1,7 @@
 """Run and score offline defensive alert triage candidates."""
 
 import argparse
+from datetime import datetime, timedelta
 import hashlib
 import json
 from pathlib import Path
@@ -44,16 +45,22 @@ EVIDENCE_KINDS = (
 )
 
 
-def evidence_decision(record):
+def evidence_records(record):
     evidence = record.get("evidence", [])
     if not isinstance(evidence, list):
         raise ValueError(f"{record['id']}: evidence must be an array")
-    by_kind = {kind: [] for kind in EVIDENCE_KINDS}
-    for item in index_records(evidence).values() if evidence else ():
+    items = list(index_records(evidence).values()) if evidence else []
+    for item in items:
         source, kind = item.get("source"), item.get("kind")
         if not isinstance(source, str) or not source.strip() or kind not in EVIDENCE_KINDS:
             raise ValueError(f"{record['id']}: evidence requires a nonblank source and known kind")
-        by_kind[kind].append(item)
+    return items
+
+
+def evidence_decision(record):
+    by_kind = {kind: [] for kind in EVIDENCE_KINDS}
+    for item in evidence_records(record):
+        by_kind[item["kind"]].append(item)
 
     unexpected = by_kind["unexpected_activity"]
     context = by_kind["approved_activity"] + by_kind["resolved_duplicate"]
@@ -80,6 +87,53 @@ def evidence_decision(record):
     return {**severity_decision(record), "reason": "severity_fallback", "evidence_ids": []}
 
 
+MAX_EVIDENCE_AGE = timedelta(hours=24)
+
+
+def timestamp(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value[:-1] + "+00:00" if value.endswith("Z") else value)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else None
+
+
+def evidence_exclusion(item, observed_at, scope):
+    if observed_at is None or not isinstance(scope, str) or not scope.strip():
+        return "missing_alert_context"
+    if item.get("scope") != scope:
+        return "scope_mismatch"
+    recorded_at = timestamp(item.get("recorded_at"))
+    if recorded_at is None:
+        return "invalid_evidence_timestamp"
+    age = observed_at - recorded_at
+    if age < timedelta(0):
+        return "future_evidence"
+    if age > MAX_EVIDENCE_AGE:
+        return "stale_evidence"
+    return None
+
+
+def guarded_evidence_decision(record):
+    if record["severity"] == "critical":
+        return {"escalate": True, "reason": "critical_severity_guard", "evidence_ids": []}
+
+    observed_at = timestamp(record.get("observed_at"))
+    scope = record.get("scope")
+    eligible, excluded = [], []
+    for item in evidence_records(record):
+        reason = evidence_exclusion(item, observed_at, scope)
+        if reason is None:
+            eligible.append(item)
+        else:
+            excluded.append({"id": item["id"], "reason": reason})
+
+    result = evidence_decision({**record, "evidence": eligible})
+    return {**result, "excluded_evidence": excluded}
+
+
 def run_policy(alerts_path, strategy, decide):
     digest, artifact = read_artifact(alerts_path, "triage_alerts")
     decisions = []
@@ -102,6 +156,10 @@ def run_baseline(alerts_path):
 
 def run_candidate(alerts_path):
     return run_policy(alerts_path, "evidence-aware", evidence_decision)
+
+
+def run_guarded_candidate(alerts_path):
+    return run_policy(alerts_path, "evidence-aware-guarded", guarded_evidence_decision)
 
 
 def score(alerts_path, decisions_path, labels_path):
@@ -149,6 +207,7 @@ def score(alerts_path, decisions_path, labels_path):
         "precision": tp / predicted_positives if predicted_positives else None,
         "recall": tp / actual_positives if actual_positives else None,
         "missed_alert_ids": missed,
+        "missed_critical_alert_ids": [key for key in missed if inputs[key].get("severity") == "critical"],
         "false_alarm_ids": false_alarms,
     }
 
@@ -162,6 +221,9 @@ def main():
     candidate = commands.add_parser("candidate", help="produce evidence-aware decisions from alerts alone")
     candidate.add_argument("alerts", type=Path)
     candidate.add_argument("--output", required=True, type=Path)
+    guarded = commands.add_parser("guarded", help="use fresh, in-scope evidence and always escalate critical alerts")
+    guarded.add_argument("alerts", type=Path)
+    guarded.add_argument("--output", required=True, type=Path)
     scorer = commands.add_parser("score", help="compare decisions with held-aside labels")
     scorer.add_argument("alerts", type=Path)
     scorer.add_argument("decisions", type=Path)
@@ -172,7 +234,11 @@ def main():
         if args.command == "score":
             result = score(args.alerts, args.decisions, args.labels)
         else:
-            run = run_baseline if args.command == "baseline" else run_candidate
+            run = {
+                "baseline": run_baseline,
+                "candidate": run_candidate,
+                "guarded": run_guarded_candidate,
+            }[args.command]
             result = run(args.alerts)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with args.output.open("x", encoding="utf-8") as output:

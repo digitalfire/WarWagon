@@ -44,3 +44,16 @@ python -m benchmarks.triage.reference score benchmarks/triage/held-out/alerts.js
 
 See the [held-out result](held-out-result.md) for measured outcomes and
 the failure cases.
+
+
+## Guarded candidate
+
+Run `guarded` with the same alert input and score its decisions as above.
+For noncritical alerts, evidence can change severity only when the scope
+exactly matches and the timezone-aware timestamp falls within 24 hours
+before the alert's observation time, inclusive. The policy excludes
+missing, future, stale, or mismatched evidence and records why. Critical
+alerts always escalate. Labels and timestamps are caller-supplied data.
+
+See the [fresh held-out comparison](guarded-held-out-result.md) for the
+three-strategy comparison and critical-alert gate.
