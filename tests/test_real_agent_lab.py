@@ -34,6 +34,23 @@ class LocalLabTests(unittest.TestCase):
             s=score_discovery(output["trace"],verify_finding(srv.port))
             self.assertTrue(s["credited"])
             self.assertFalse(score_discovery([{"kind":"final","content":"found XSS!"}],verify_finding(srv.port))["credited"])
+    def test_native_object_tool_arguments(self):
+        class ObjectArgsModel:
+            model="object-args-test-double"
+            def __init__(self): self.calls=0
+            def complete(self,messages,tools=None):
+                self.calls+=1
+                if self.calls==1:
+                    return {"choices":[{"message":{"role":"assistant","content":None,"tool_calls":[{"id":"obj-1","type":"function","function":{"name":"lab_http_get","arguments":{"path":"/search?q=%3Cb%3ETEST%3C%2Fb%3E"}}}]}}],"usage":{}}
+                call=messages[-2]["tool_calls"][0]
+                self_arguments=call["function"]["arguments"]
+                assert isinstance(self_arguments,str)
+                return {"choices":[{"message":{"role":"assistant","content":"Reflected HTML on /search"}}],"usage":{}}
+        with FixtureServer() as srv:
+            result=AgentRunner(ObjectArgsModel(),LabTool(srv.port)).run("inspect")
+            self.assertEqual(result["trace"][0]["result"]["status"],200)
+            self.assertIn("<b>TEST</b>",result["trace"][0]["result"]["body"])
+
     def test_model_requires_valid_transport(self):
         with self.assertRaises(ValueError):
             ChatModel("http://example.org/v1","sample")
