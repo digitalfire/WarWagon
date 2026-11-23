@@ -134,7 +134,19 @@ py -3 -m warwagon.arc --reviewers-file config/arc-reviewers.ollama-rtx5090.json 
 ```bash
 python -m unittest discover -s tests -v
 ```
-Unit tests use a clearly labeled test-double, not an LLM.
+Unit tests cover individual CLI contracts, provider response parsing, and
+failure cases using test doubles. The offline ARC integration test runs the
+report, challenge, response, verifier, and disposition commands as separate
+processes. It tests file handoffs and changed evidence using a synthetic
+first-pass review artifact.
+
+The prototype GitHub Actions workflow runs the full suite. The planner
+reference workflow separately exercises the deterministic simulator.
+For model, prompt, profile, or transport changes, also run a harmless
+preflight and an ARC smoke review on the intended Ollama host. Preserve
+the trace and check role coverage, schema validity, reported model identity,
+and provider usage when available. Those runs measure compatibility on
+that host. Reviewer quality requires comparative trials on held-out proposals.
 
 ## Explicit gaps before we can compare planner intelligence
 - Current agent is a **single real-model tool loop**, not four implemented real planning strategies.
