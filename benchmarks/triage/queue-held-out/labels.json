@@ -1,0 +1,67 @@
+{
+  "kind": "triage_labels",
+  "schema_version": 1,
+  "alerts_sha256": "573ec80a3d89fbc0ac0ae3e08bcd310de7a746f287ad52939d0ec4cbe0172793",
+  "labels": [
+    {
+      "id": "Q01",
+      "escalate": true,
+      "rationale": "An access review later confirmed the grant fell outside the approver's authority."
+    },
+    {
+      "id": "Q02",
+      "escalate": false,
+      "rationale": "The export was the routine month-end job after a scheduled time change."
+    },
+    {
+      "id": "Q03",
+      "escalate": true,
+      "rationale": "A later investigation found the unapproved configuration still active."
+    },
+    {
+      "id": "Q04",
+      "escalate": true,
+      "rationale": "Clock correction placed the entry within the incident, and the operator confirmed the change was unapproved."
+    },
+    {
+      "id": "Q05",
+      "escalate": false,
+      "rationale": "Follow-up found the note described a completed rehearsal."
+    },
+    {
+      "id": "Q06",
+      "escalate": true,
+      "rationale": "The original monitoring record was recovered, and the investigation confirmed an actual incident."
+    },
+    {
+      "id": "Q07",
+      "escalate": true,
+      "rationale": "Service staff independently confirmed that normal audit coverage had been lost."
+    },
+    {
+      "id": "Q08",
+      "escalate": true,
+      "rationale": "Subsequent review found that the maintenance covered a different archive instance."
+    },
+    {
+      "id": "Q09",
+      "escalate": false,
+      "rationale": "The scheduled restart matched the approved instance and time window."
+    },
+    {
+      "id": "Q10",
+      "escalate": false,
+      "rationale": "The fulfillment alert was unrelated and its local checks were normal."
+    },
+    {
+      "id": "Q11",
+      "escalate": false,
+      "rationale": "The heartbeat delay was within the normal operating range."
+    },
+    {
+      "id": "Q12",
+      "escalate": true,
+      "rationale": "Follow-up confirmed that the required protective control was unavailable."
+    }
+  ]
+}

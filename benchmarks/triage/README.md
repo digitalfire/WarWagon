@@ -71,3 +71,18 @@ uncorroborated, too old, or missing the timestamp or alert context needed
 to assess it. Future and mismatched-scope records are excluded. Results
 are ordered by severity and alert ID. The command does not change the
 decision file or escalate an alert.
+
+
+## Score the analyst queue
+
+Use a fresh alert file to generate guarded decisions and a review queue
+with the commands above. Only the final command reads the separate labels.
+
+~~~bash
+python -m benchmarks.triage.queue_score benchmarks/triage/queue-held-out/alerts.json artifacts/triage-guarded.json benchmarks/triage/queue-held-out/labels.json artifacts/triage-review-queue.json --output artifacts/triage-queue-score.json
+~~~
+
+The score separates analyst workload (number of queued alerts) from miss
+coverage (the share of deferred incidents surfaced for review). A queued
+incident is still awaiting analyst review. See the
+[fresh queue comparison](queue-held-out-result.md).
