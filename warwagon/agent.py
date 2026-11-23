@@ -43,6 +43,16 @@ class AgentRunner:
                 result["role"] = "assistant"
             # Keep only fields valid in the chat schema.
             result = {k:v for k,v in result.items() if k in ("role","content","tool_calls","function_call")}
+            # Ollama-compatible providers may return tool-call arguments as native objects.
+            # Normalize before replaying assistant messages through Chat Completions.
+            calls = result.get("tool_calls") or []
+            for call in calls:
+                fn = call.get("function") or {}
+                arguments = fn.get("arguments", "{}")
+                if isinstance(arguments, dict):
+                    fn["arguments"] = json.dumps(arguments)
+                elif not isinstance(arguments, str):
+                    fn["arguments"] = "{}"
             messages.append(result)
             for key in usage:
                 usage[key] += int((response.get("usage") or {}).get(key) or 0)
