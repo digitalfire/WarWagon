@@ -14,7 +14,7 @@ The deterministic benchmark remains a maintenance smoke test only. New primary w
 | WW-INT-003 | P0 | Pinned isolated vulnerable fixtures | Repeatable reset, observable HTTP API and negative controls | Initial stdlib fixture; pinning/extended targets pending |
 | WW-INT-004 | P0 | Evidence-backed independent scorer | Validate agent-discovered evidence; ground truth hidden from agent | Minimal evidence correlation prototype; blind scorer pending |
 | WW-INT-005 | P0 | Four real planner implementations | Same model/tool/budget, actual reasoning traces | Not started |
-| WW-ARC-001 | P0 | Executable ARC reviewer runner | Nine real isolated model calls with traceable artifacts | Prototype added; model call pending |
+| WW-ARC-001 | P0 | Executable ARC reviewer runner | Nine real isolated model calls with traceable artifacts | First-pass validation, per-role failure records and verdict attribution implemented |
 | WW-ARC-002 | P0 | Diverse/blinded reviewer deployment | Multiple distinct model contexts/providers, frozen packet | Not started |
 | WW-ARC-003 | P0 | Independent synthesis/dissent protocol | Actual reviews, adversarial cross-exam, human decision | Not started |
 | WW-EVAL-001 | P0 | Measured model/tool budgets | Token, tool, latency, communication accounting | Partial; runtime token usage recorded |
