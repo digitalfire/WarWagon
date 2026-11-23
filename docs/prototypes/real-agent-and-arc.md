@@ -83,6 +83,19 @@ and requests specific evidence in a separate open record. Roles are
 caller-supplied labels. The command neither authenticates a reviewer nor
 resolves or rewrites a review.
 
+## Respond to an ARC challenge with evidence
+
+~~~bash
+python -m warwagon.arc_evidence artifacts/arc-challenge.json \
+  --responder distributed-systems --response "These logs cover the recovery scenarios." \
+  --evidence artifacts/recovery-tests.txt --output artifacts/arc-evidence-response.json
+~~~
+
+Repeat the evidence flag for additional local files. The response records the
+challenge and proposal digests, the caller-supplied role, and each file's path,
+size, and SHA-256 digest. Keep the files with the response for verification.
+The command creates a separate record and leaves the challenge open.
+
 ## Test without a model
 ```bash
 python -m unittest discover -s tests -v
