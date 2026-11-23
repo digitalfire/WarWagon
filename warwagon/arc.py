@@ -135,6 +135,53 @@ def retry_source(source, proposal_sha256, role):
     }
 
 
+def load_reviewers(args, roles):
+    if args.reviewers_file:
+        profiles = json.loads(args.reviewers_file.read_text(encoding="utf-8"))
+        if not isinstance(profiles, dict) or set(profiles) != set(ROLES):
+            raise ValueError("reviewers-file must contain all nine known roles")
+    else:
+        profiles = {role: {"model": args.model, "base_url": args.base_url} for role in roles}
+
+    reviewers = {}
+    for role in roles:
+        profile = profiles[role]
+        if not isinstance(profile, dict) or not all(
+            isinstance(profile.get(key), str) and profile[key].strip()
+            for key in ("base_url", "model")
+        ):
+            raise ValueError(f"{role} requires nonblank base_url and model strings")
+
+        base_url = profile["base_url"]
+        try:
+            if any(char.isspace() for char in base_url):
+                raise ValueError
+            url = urlsplit(base_url)
+            # Accessing the port checks that it is numeric and in range.
+            _ = url.port
+        except ValueError:
+            raise ValueError(f"{role} has an invalid base_url") from None
+        if url.query or url.fragment:
+            raise ValueError(f"{role} base_url must not include a query or fragment")
+
+        key_env = profile.get("api_key_env")
+        if key_env is not None:
+            if not isinstance(key_env, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key_env):
+                raise ValueError(f"{role} api_key_env must be an environment variable name")
+            api_key = os.getenv(key_env)
+            if not api_key:
+                raise ValueError(f"{role} environment variable {key_env} is unset or empty")
+        else:
+            api_key = "" if args.reviewers_file else None
+        try:
+            reviewers[role] = ChatModel(base_url, profile["model"], api_key=api_key)
+        except ValueError:
+            raise ValueError(
+                f"{role} base_url must use HTTPS or loopback HTTP without embedded credentials"
+            ) from None
+    return reviewers
+
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--proposal",type=Path,default=Path("docs/rfcs/RFC-0001-planner-research-v2.md"))
@@ -142,54 +189,48 @@ def main():
     ap.add_argument("--base-url",default=os.getenv("WW_MODEL_BASE_URL","http://127.0.0.1:11434/v1"))
     ap.add_argument("--output",type=Path,default=Path("artifacts/arc-review.json"))
     ap.add_argument("--reviewers-file",type=Path,help="JSON map of role to {model,base_url}; permits distinct model/provider reviewers")
+    ap.add_argument(
+        "--check-config", action="store_true",
+        help="check all reviewer settings offline without reading a proposal or contacting providers",
+    )
     ap.add_argument("--retry-from", type=Path, help="prior ARC artifact containing a failed review")
     ap.add_argument("--retry-role", choices=ROLES, help="run only this unsuccessful reviewer")
     args = ap.parse_args()
+    if not args.model and not args.reviewers_file:
+        ap.error("provide --model or --reviewers-file")
+    if args.check_config and (args.retry_from or args.retry_role):
+        ap.error("--check-config cannot be combined with retry options")
     if bool(args.retry_from) != bool(args.retry_role):
         ap.error("--retry-from and --retry-role must be used together")
     if args.retry_from and (args.output.resolve() == args.retry_from.resolve() or args.output.exists()):
         ap.error("retry output must be a new artifact; specify an unused --output path")
-    if not args.model and not args.reviewers_file: ap.error("provide --model or --reviewers-file")
+    if not args.check_config:
+        try:
+            proposal_bytes = args.proposal.read_bytes()
+            proposal = proposal_bytes.decode("utf-8")
+            proposal_sha256 = hashlib.sha256(proposal_bytes).hexdigest()
+            previous = (
+                retry_source(args.retry_from, proposal_sha256, args.retry_role)
+                if args.retry_from else None
+            )
+        except (OSError, ValueError) as exc:
+            ap.error(str(exc))
+        if len(proposal) > 120000:
+            ap.error("proposal exceeds 120k characters; freeze a smaller packet")
+    roles = (args.retry_role,) if args.retry_role else tuple(ROLES)
     try:
-        proposal_bytes = args.proposal.read_bytes()
-        proposal = proposal_bytes.decode("utf-8")
-        proposal_sha256 = hashlib.sha256(proposal_bytes).hexdigest()
-        previous = (
-            retry_source(args.retry_from, proposal_sha256, args.retry_role)
-            if args.retry_from else None
-        )
+        reviewers = load_reviewers(args, roles)
     except (OSError, ValueError) as exc:
         ap.error(str(exc))
-    if len(proposal) > 120000:
-        ap.error("proposal exceeds 120k characters; freeze a smaller packet")
-    roles = (args.retry_role,) if previous is not None else tuple(ROLES)
-    try:
-        if args.reviewers_file:
-            profiles = json.loads(args.reviewers_file.read_text(encoding="utf-8"))
-            if not isinstance(profiles, dict) or set(profiles) != set(ROLES):
-                raise ValueError("reviewers-file must contain all nine known roles")
-        else:
-            profiles = {role: {"model": args.model, "base_url": args.base_url} for role in ROLES}
-        reviewers = {}
-        for role in roles:
-            profile = profiles[role]
-            if not isinstance(profile, dict) or not all(
-                isinstance(profile.get(key), str) and profile[key].strip()
-                for key in ("base_url", "model")
-            ):
-                raise ValueError(f"{role} requires nonblank base_url and model strings")
-            key_env = profile.get("api_key_env")
-            if key_env is not None:
-                if not isinstance(key_env, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key_env):
-                    raise ValueError(f"{role} api_key_env must be an environment variable name")
-                api_key = os.getenv(key_env)
-                if not api_key:
-                    raise ValueError(f"{role} environment variable {key_env} is unset or empty")
-            else:
-                api_key = "" if args.reviewers_file else None
-            reviewers[role] = ChatModel(profile["base_url"], profile["model"], api_key=api_key)
-    except (OSError, ValueError) as exc:
-        ap.error(str(exc))
+
+    if args.check_config:
+        print(json.dumps({
+            "status": "valid",
+            "role_count": len(reviewers),
+            "configured_model_count": len({reviewer.model for reviewer in reviewers.values()}),
+            "configured_endpoint_count": len({reviewer.base_url for reviewer in reviewers.values()}),
+        }))
+        return 0
 
     reviews = []
     for role in roles:

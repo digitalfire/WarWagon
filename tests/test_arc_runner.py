@@ -126,6 +126,79 @@ class ReviewTests(unittest.TestCase):
             self.assertEqual(urlopen.call_args.args[0].get_header("Authorization"), expected)
 
 
+    @patch.object(ChatModel, "complete")
+    def test_check_config_validates_tracked_profile_without_inference_or_proposal(self, complete):
+        profile = Path(__file__).resolve().parents[1] / "config" / "arc-reviewers.ollama-rtx5090.json"
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            proposal = root / "missing.md"
+            output = root / "unused.json"
+            argv = [
+                "arc", "--check-config", "--reviewers-file", str(profile),
+                "--proposal", str(proposal), "--output", str(output),
+            ]
+            with patch("sys.argv", argv), patch("sys.stdout", new_callable=io.StringIO) as stdout:
+                self.assertEqual(main(), 0)
+            self.assertEqual(json.loads(stdout.getvalue()), {
+                "status": "valid", "role_count": len(ROLES),
+                "configured_model_count": 2, "configured_endpoint_count": 1,
+            })
+            self.assertFalse(output.exists())
+        complete.assert_not_called()
+
+    @patch.dict("os.environ", {"ARC_SECRET": "do-not-print-this-token"})
+    def test_check_config_summary_omits_credentials_profile_names_and_urls(self):
+        profiles = {
+            role: {"base_url": "https://endpoint.example/v1", "model": "private-alias",
+                   "api_key_env": "ARC_SECRET"}
+            for role in ROLES
+        }
+        with TemporaryDirectory() as directory:
+            profile = Path(directory) / "profiles.json"
+            profile.write_text(json.dumps(profiles), encoding="utf-8")
+            argv = ["arc", "--check-config", "--reviewers-file", str(profile)]
+            with patch("sys.argv", argv), patch("sys.stdout", new_callable=io.StringIO) as stdout:
+                self.assertEqual(main(), 0)
+        for value in ("do-not-print-this-token", "ARC_SECRET", "endpoint.example", "private-alias"):
+            self.assertNotIn(value, stdout.getvalue())
+
+    def test_invalid_profile_is_rejected_in_check_and_review_modes(self):
+        role = next(iter(ROLES))
+        base = {"base_url": "http://localhost/v1", "model": "test"}
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            profile = root / "profiles.json"
+            proposal = root / "proposal.md"
+            proposal.write_text("Frozen", encoding="utf-8")
+            for override, expected in (
+                (None, "all nine known roles"),
+                ({"model": " "}, "nonblank base_url and model"),
+                ({"base_url": "https://endpoint.example:invalid/v1"}, "invalid base_url"),
+                ({"base_url": "https://user:secret@endpoint.example/v1"}, "embedded credentials"),
+                ({"api_key_env": "ARC_MISSING"}, "unset or empty"),
+            ):
+                profiles = {name: base.copy() for name in ROLES}
+                if override is None:
+                    del profiles[role]
+                else:
+                    profiles[role].update(override)
+                profile.write_text(json.dumps(profiles), encoding="utf-8")
+                for options in (["--check-config"], ["--proposal", str(proposal)]):
+                    with self.subTest(override=override, options=options):
+                        argv = ["arc", "--reviewers-file", str(profile), *options]
+                        with (
+                            patch("sys.argv", argv),
+                            patch("sys.stderr", new_callable=io.StringIO) as stderr,
+                            patch.dict("os.environ", {"ARC_MISSING": ""}),
+                            patch.object(ChatModel, "complete") as complete,
+                        ):
+                            with self.assertRaises(SystemExit) as failure:
+                                main()
+                        self.assertEqual(failure.exception.code, 2)
+                        self.assertIn(expected, stderr.getvalue())
+                        self.assertNotIn("user:secret", stderr.getvalue())
+                        complete.assert_not_called()
+
     @patch("warwagon.arc.ChatModel")
     def test_retry_runs_one_role_and_retains_the_original_attempt(self, model):
         model.return_value = MockReviewer()
