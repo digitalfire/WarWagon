@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from benchmarks.triage.reference import run_baseline, score
+from benchmarks.triage.reference import evidence_decision, run_baseline, score
 
 
 FIXTURES = Path(__file__).resolve().parents[1] / "benchmarks/triage/fixtures"
@@ -53,3 +53,34 @@ class TriageReferenceTests(TestCase):
         metrics = score(self.alerts, self.decisions, self.labels)
         self.assertIsNone(metrics["precision"])
         self.assertEqual(metrics["recall"], 0)
+
+
+    def test_evidence_can_change_severity_decision_and_cites_sources(self):
+        approved = [
+            {"id": "change", "kind": "approved_activity", "source": "change-calendar"},
+            {"id": "owner", "kind": "approved_activity", "source": "service-owner"},
+        ]
+        decision = evidence_decision({"id": "calibration", "severity": "high", "evidence": approved})
+        self.assertEqual(decision, {
+            "escalate": False, "reason": "corroborated_approved_activity",
+            "evidence_ids": ["change", "owner"],
+        })
+
+    def test_same_source_never_counts_twice_and_conflict_escalates(self):
+        activity = [
+            {"id": "login", "kind": "unexpected_activity", "source": "audit"},
+            {"id": "copy", "kind": "unexpected_activity", "source": " AUDIT "},
+        ]
+        alert = {"id": "calibration", "severity": "low", "evidence": activity}
+        self.assertEqual(evidence_decision(alert)["reason"], "severity_fallback")
+        alert["evidence"] = [
+            activity[0], {"id": "change", "kind": "approved_activity", "source": "calendar"},
+        ]
+        self.assertEqual(evidence_decision(alert), {
+            "escalate": True, "reason": "conflicting_evidence", "evidence_ids": ["login", "change"],
+        })
+
+    def test_malformed_evidence_is_rejected(self):
+        for evidence in ([{"id": "value", "kind": "unconfirmed_signal", "source": ""}], None):
+            with self.subTest(evidence=evidence), self.assertRaises(ValueError):
+                evidence_decision({"id": "calibration", "severity": "medium", "evidence": evidence})

@@ -1,0 +1,247 @@
+{
+  "kind": "triage_alerts",
+  "schema_version": 1,
+  "alerts": [
+    {
+      "id": "H01",
+      "severity": "high",
+      "summary": "A deployment alarm arrived during a scheduled service change.",
+      "evidence": [
+        {
+          "id": "H01-E1",
+          "kind": "approved_activity",
+          "source": "change-calendar"
+        },
+        {
+          "id": "H01-E2",
+          "kind": "approved_activity",
+          "source": "service-owner"
+        }
+      ]
+    },
+    {
+      "id": "H02",
+      "severity": "critical",
+      "summary": "A restricted storage alarm appeared during normal operations.",
+      "evidence": [
+        {
+          "id": "H02-E1",
+          "kind": "unexpected_activity",
+          "source": "access-audit"
+        },
+        {
+          "id": "H02-E2",
+          "kind": "unexpected_activity",
+          "source": "storage-monitor"
+        }
+      ]
+    },
+    {
+      "id": "H03",
+      "severity": "medium",
+      "summary": "Two records flag a privileged session after the user's shift.",
+      "evidence": [
+        {
+          "id": "H03-E1",
+          "kind": "unexpected_activity",
+          "source": "identity-audit"
+        },
+        {
+          "id": "H03-E2",
+          "kind": "unexpected_activity",
+          "source": "endpoint-observer"
+        }
+      ]
+    },
+    {
+      "id": "H04",
+      "severity": "low",
+      "summary": "One observer flags a brief unplanned change to a service.",
+      "evidence": [
+        {
+          "id": "H04-E1",
+          "kind": "unexpected_activity",
+          "source": "service-monitor"
+        }
+      ]
+    },
+    {
+      "id": "H05",
+      "severity": "high",
+      "summary": "A health monitor reports one missed heartbeat.",
+      "evidence": [
+        {
+          "id": "H05-E1",
+          "kind": "unconfirmed_signal",
+          "source": "health-monitor"
+        }
+      ]
+    },
+    {
+      "id": "H06",
+      "severity": "medium",
+      "summary": "A queue repeats a service availability warning.",
+      "evidence": [
+        {
+          "id": "H06-E1",
+          "kind": "resolved_duplicate",
+          "source": "incident-log"
+        },
+        {
+          "id": "H06-E2",
+          "kind": "resolved_duplicate",
+          "source": "on-call-notes"
+        }
+      ]
+    },
+    {
+      "id": "H07",
+      "severity": "low",
+      "summary": "The change log and audit record disagree about access to an internal report.",
+      "evidence": [
+        {
+          "id": "H07-E1",
+          "kind": "approved_activity",
+          "source": "change-calendar"
+        },
+        {
+          "id": "H07-E2",
+          "kind": "unexpected_activity",
+          "source": "access-audit"
+        }
+      ]
+    },
+    {
+      "id": "H08",
+      "severity": "high",
+      "summary": "The same availability condition reappears in two dashboards.",
+      "evidence": [
+        {
+          "id": "H08-E1",
+          "kind": "resolved_duplicate",
+          "source": "incident-log"
+        },
+        {
+          "id": "H08-E2",
+          "kind": "resolved_duplicate",
+          "source": "service-desk"
+        }
+      ]
+    },
+    {
+      "id": "H09",
+      "severity": "medium",
+      "summary": "An audit signal conflicts with an approved rotation record.",
+      "evidence": [
+        {
+          "id": "H09-E1",
+          "kind": "unexpected_activity",
+          "source": "identity-audit"
+        },
+        {
+          "id": "H09-E2",
+          "kind": "approved_activity",
+          "source": "change-calendar"
+        }
+      ]
+    },
+    {
+      "id": "H10",
+      "severity": "high",
+      "summary": "A service reports activity near a maintenance window.",
+      "evidence": [
+        {
+          "id": "H10-E1",
+          "kind": "unexpected_activity",
+          "source": "service-audit"
+        },
+        {
+          "id": "H10-E2",
+          "kind": "resolved_duplicate",
+          "source": "ticket-mirror"
+        }
+      ]
+    },
+    {
+      "id": "H11",
+      "severity": "critical",
+      "summary": "A change monitor flags a transient configuration difference.",
+      "evidence": [
+        {
+          "id": "H11-E1",
+          "kind": "approved_activity",
+          "source": "deployment-log"
+        },
+        {
+          "id": "H11-E2",
+          "kind": "approved_activity",
+          "source": "service-owner"
+        }
+      ]
+    },
+    {
+      "id": "H12",
+      "severity": "low",
+      "summary": "A queue reports a short-lived monitoring delay.",
+      "evidence": []
+    },
+    {
+      "id": "H13",
+      "severity": "medium",
+      "summary": "Two alerts reference the same endpoint observation.",
+      "evidence": [
+        {
+          "id": "H13-E1",
+          "kind": "unexpected_activity",
+          "source": "endpoint-observer"
+        },
+        {
+          "id": "H13-E2",
+          "kind": "unexpected_activity",
+          "source": " ENDPOINT-OBSERVER "
+        }
+      ]
+    },
+    {
+      "id": "H14",
+      "severity": "high",
+      "summary": "A privileged endpoint reports high-severity loss of health telemetry.",
+      "evidence": [
+        {
+          "id": "H14-E1",
+          "kind": "unconfirmed_signal",
+          "source": "endpoint-health"
+        }
+      ]
+    },
+    {
+      "id": "H15",
+      "severity": "critical",
+      "summary": "Deployment and service notes match a planned service change.",
+      "evidence": [
+        {
+          "id": "H15-E1",
+          "kind": "approved_activity",
+          "source": "deployment-log"
+        },
+        {
+          "id": "H15-E2",
+          "kind": "approved_activity",
+          "source": "service-owner"
+        }
+      ]
+    },
+    {
+      "id": "H16",
+      "severity": "medium",
+      "summary": "A connectivity alert is observed during a routine network check.",
+      "evidence": [
+        {
+          "id": "H16-E1",
+          "kind": "unconfirmed_signal",
+          "source": "network-health"
+        }
+      ]
+    }
+  ]
+}
