@@ -57,3 +57,17 @@ alerts always escalate. Labels and timestamps are caller-supplied data.
 
 See the [fresh held-out comparison](guarded-held-out-result.md) for the
 three-strategy comparison and critical-alert gate.
+
+
+## Analyst review queue
+
+~~~bash
+python -m benchmarks.triage.review_queue benchmarks/triage/guarded-held-out/alerts.json artifacts/triage-guarded.json --output artifacts/triage-review-queue.json
+~~~
+
+The queue links to the exact alerts and guarded decisions. It surfaces
+deferred alerts with unexpected-activity evidence that is eligible but
+uncorroborated, too old, or missing the timestamp or alert context needed
+to assess it. Future and mismatched-scope records are excluded. Results
+are ordered by severity and alert ID. The command does not change the
+decision file or escalate an alert.
