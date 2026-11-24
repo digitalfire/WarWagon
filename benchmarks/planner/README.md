@@ -37,3 +37,6 @@ The output contains 160 runs (8 fixture names × 5 seeds × 4 strategies) with d
 6. Perform independent ARC review and preregister comparison metrics.
 
 See [benchmark methodology](../../docs/benchmarks/planner-v1/README.md) and [RFC-0001](../../docs/rfcs/RFC-0001-planner-research-v2.md).
+
+See [benign service-health scoring](health.md) for the live Docker calibration
+and the independent artifact scoring contract.
