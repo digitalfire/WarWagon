@@ -49,6 +49,28 @@ The React UI is a UX preview using controlled **sample data**. No backend calls 
 
 **Do not merge sample engagement state into recorded evidence.** Real integration requires: Engagement, PlanRevision, AgentTask, ModelInvocation, EventRecord, Observation, EvidenceArtifact, FactAssertion, FindingVerification, and OperatorDirective contracts; a typed OpenAPI client; an SSE stream with resumable cursors; provenance checks.
 
+## Read-only recorded-run API (first real data integration)
+
+Run the standard-library API from the **repository root**:
+
+```bash
+python -m warwagon.console_api --port 8765
+```
+
+Then start the React app in a second terminal:
+
+```bash
+cd console
+npm install
+npm run dev
+```
+
+Choose **Recorded Run Evidence** in the React sidebar. Vite proxies `/api/v1/*` to the read-only `127.0.0.1:8765` gateway. The gateway loads exact recorded JSON artifacts and validates their SHA-256 linkage, observation digest, and verifier provenance before displaying the two fixed example run IDs.
+
+API endpoints: `/api/v1/runs`, `/api/v1/runs/{id}`, and `/api/v1/runs/{id}/events`. The final endpoint is a **finite historical SSE replay**, not a live event stream.
+
+The API does not contact Ollama, run security tools or assess a target. If it is unavailable, the React recorded-run view shows an error and does **not** substitute fake verified data. The existing `recorded-runs.html` import-and-verify page remains untouched.
+
 ## Engineering follow-ups
 
 1. Reconcile the frontend domain types with versioned backend schemas; generate an API client.

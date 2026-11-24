@@ -24,3 +24,13 @@ test('new engagement saves a draft but does not launch a real assessment',async(
   await expect(page.getByRole('heading',{name:'New local application review'})).toBeVisible();
   await expect(page.getByText('Draft (not launched)')).toBeVisible();
 });
+
+test('recorded run workspace shows real recorded provenance and historical replay',async({page})=>{
+  await page.goto('/');
+  await page.getByRole('button',{name:'Recorded Run Evidence'}).click();
+  await expect(page.getByRole('heading',{name:'Recorded Run Workspace'})).toBeVisible();
+  await expect(page.getByText('Recorded execution history')).toBeVisible();
+  await expect(page.getByText('Rejected supplied negative control')).toBeVisible();
+  await page.getByRole('button',{name:'Replay recorded events'}).click();
+  await expect(page.getByText('Historical replay complete')).toBeVisible();
+});
