@@ -1,4 +1,6 @@
 import { readArtifacts } from "./artifacts.js";
+import { mountArc } from "./arc.js";
+import { mountRuns, runRecord } from "./runs.js";
 
 const run = document.querySelector("#run");
 const template = document.querySelector("#run-template");
@@ -6,6 +8,33 @@ const state = document.querySelector("#load-state");
 const open = document.querySelector("#open");
 const sample = document.querySelector("#sample");
 const files = document.querySelector("#files");
+let loadRevision = 0;
+const index = mountRuns(document.querySelector("#run-index"), {
+  openRun(value, isExample) {
+    loadRevision++;
+    state.textContent = "";
+    open.disabled = false;
+    sample.disabled = false;
+    render(value, isExample);
+    run.querySelector("#run-title").focus();
+  },
+});
+let arcMounted = false;
+
+function showWorkspace() {
+  const current = location.hash === "#arc" ? "arc" : "runs";
+  for (const link of document.querySelectorAll("[data-workspace]")) {
+    if (link.dataset.workspace === current) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+    document.querySelector("#" + link.dataset.workspace + "-workspace").hidden =
+      link.dataset.workspace !== current;
+  }
+
+  if (current === "arc" && !arcMounted) {
+    arcMounted = true;
+    void mountArc(document.querySelector("#arc-detail"));
+  }
+}
 
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -48,7 +77,8 @@ function showReports(panel, reports) {
   }
 }
 
-function render({ trace, reports }, isSample) {
+function render(value, isSample) {
+  const { trace, reports } = value;
   const page = template.content.cloneNode(true);
   const field = name => page.querySelector(`[data-field="${name}"]`);
   const set = (name, value) => { field(name).textContent = value ?? "Unavailable"; };
@@ -57,19 +87,15 @@ function render({ trace, reports }, isSample) {
   const tool = data.tool_call;
   const args = tool?.function?.arguments;
   const claim = data.claim;
-  const timestamp = Date.parse(observation?.timestamp_utc);
-  const modelReports = reports.filter(report => report.data.claim_source === "model");
-  const verified = modelReports[0]?.data.verified;
-  const conflict = modelReports.some(report => report.data.verified !== verified);
+  const { date, time, verdict, tone } = runRecord(value);
 
   set("source", isSample ? "Recorded example" : "Imported run");
-  set("timestamp", Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : null);
+  set("timestamp", date);
+  if (Number.isFinite(time)) field("timestamp").dateTime = new Date(time).toISOString();
   set("model", data.model);
   set("target", typeof observation?.url === "string" ? observation.url : null);
-  statusBadge(
-    field("summary-verdict"), conflict ? undefined : verified,
-    conflict ? "Mixed results" : verified === undefined ? "No result" : verified ? "Verified" : "Rejected"
-  );
+  statusBadge(field("summary-verdict"), tone === "good" ? true : tone === "bad" ? false : undefined, verdict);
+  field("summary-verdict").classList.toggle("mixed", tone === "mixed");
   set("tool", tool?.function?.name);
   set("arguments", typeof args === "string" ? args : args == null ? null : JSON.stringify(args, null, 2));
   set("call-id", tool?.id);
@@ -102,6 +128,7 @@ async function exampleFiles() {
 }
 
 async function load(getFiles, isSample) {
+  const revision = ++loadRevision;
   open.disabled = true;
   sample.disabled = true;
   state.textContent = "Checking the selected artifacts…";
@@ -109,13 +136,23 @@ async function load(getFiles, isSample) {
     if (!globalThis.crypto?.subtle) {
       throw new Error("Open the inspector on localhost or HTTPS to check artifact hashes.");
     }
-    render(await readArtifacts(await getFiles()), isSample);
+    const value = await readArtifacts(await getFiles());
+    if (revision !== loadRevision) return;
+    render(value, isSample);
     state.textContent = "";
+    if (!isSample) run.querySelector("#run-title").focus();
+    const runsIndex = await index;
+    if (revision !== loadRevision) return;
+    runsIndex.addRun(value, { isExample: isSample, preserveSearch: isSample });
+    runsIndex.selectRun(value.trace.digest);
   } catch (error) {
+    if (revision !== loadRevision) return;
     state.textContent = run.hidden ? error.message : `${error.message} The previous run is still displayed.`;
   } finally {
-    open.disabled = false;
-    sample.disabled = false;
+    if (revision === loadRevision) {
+      open.disabled = false;
+      sample.disabled = false;
+    }
   }
 }
 
@@ -126,4 +163,6 @@ files.addEventListener("change", () => {
   if (selected.length) load(() => selected, false);
 });
 sample.addEventListener("click", () => load(exampleFiles, true));
+window.addEventListener("hashchange", showWorkspace);
+showWorkspace();
 load(exampleFiles, true);

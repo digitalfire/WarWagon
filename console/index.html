@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="dark">
   <title>Run Inspector · WarWagon</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./arc.css">
   <script type="module" src="./inspector.js"></script>
 </head>
 <body>
@@ -14,30 +15,50 @@
       <a href="./" class="wordmark"><span class="mark" aria-hidden="true">W</span>WarWagon</a>
       <span class="topbar-divider" aria-hidden="true"></span>
       <span class="section-name">Operations Console</span>
+      <nav class="workspace-nav" aria-label="Console workspaces">
+        <a href="#runs" data-workspace="runs" aria-current="page">Runs</a>
+        <a href="#arc" data-workspace="arc">ARC</a>
+      </nav>
       <span class="local"><span aria-hidden="true"></span> Read-only</span>
     </div>
   </header>
   <main class="frame">
-    <header class="page-header">
-      <div>
-        <h1>Run inspector</h1>
-        <p>Inspect model actions, tool evidence, and verifier results.</p>
+    <section id="runs-workspace" aria-labelledby="runs-heading">
+      <header class="page-header">
+        <div>
+          <h1 id="runs-heading">Runs</h1>
+          <p>Review recorded tool calls, observations, and verifier results.</p>
+        </div>
+        <div class="actions">
+          <button id="sample" type="button">Load example</button>
+          <button id="open" class="primary" type="button">Open JSON files</button>
+          <input id="files" type="file" multiple accept=".json,application/json" hidden>
+        </div>
+      </header>
+      <div class="workspace-columns">
+        <aside id="run-index" aria-label="Run catalog"></aside>
+        <div class="run-detail">
+          <div id="load-state" class="notice" role="status" aria-live="polite">Loading the recorded Ollama run…</div>
+          <div id="run" hidden></div>
+        </div>
       </div>
-      <div class="actions">
-        <button id="sample" type="button">Load example</button>
-        <button id="open" class="primary" type="button">Open JSON files</button>
-        <input id="files" type="file" multiple accept=".json,application/json" hidden>
-      </div>
-    </header>
-    <div id="load-state" class="notice" role="status" aria-live="polite">Loading the recorded Ollama run…</div>
-    <div id="run" hidden></div>
+    </section>
+    <section id="arc-workspace" aria-labelledby="arc-heading" hidden>
+      <header class="page-header">
+        <div>
+          <h1 id="arc-heading">Architecture Review Council</h1>
+          <p>Inspect proposal reviews, evidence, and decisions.</p>
+        </div>
+      </header>
+      <div id="arc-detail"></div>
+    </section>
   </main>
   <template id="run-template">
     <section class="run-banner" aria-labelledby="run-title">
       <div class="run-head">
         <p class="eyebrow" data-field="source"></p>
-        <h2 id="run-title">Benign HTTP evidence run</h2>
-        <p class="subtle" data-field="timestamp"></p>
+        <h2 id="run-title" tabindex="-1">Benign HTTP evidence run</h2>
+        <p class="subtle"><time data-field="timestamp"></time></p>
       </div>
       <div class="run-summary">
         <dl><dt>Model</dt><dd data-field="model"></dd></dl>

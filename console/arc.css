@@ -1,0 +1,29 @@
+.arc-grid {
+  display: grid;
+  grid-template-columns: minmax(150px, .85fr) minmax(0, 1.35fr) minmax(0, 1.2fr);
+  gap: 16px;
+  align-items: start;
+}
+.arc-card { padding: 16px; overflow-wrap: anywhere; }
+.arc-card h2 { font-size: 1.1rem; }
+.arc-card h3 { font-size: .9rem; }
+.arc-card p { font-size: .86rem; }
+.arc-card .arc-proposal-title { font-size: .96rem; margin-top: 4px; }
+.arc-card .arc-summary { margin-top: 14px; }
+.arc-block, .arc-attempts, .arc-provenance { margin-top: 12px; }
+.arc-block, .arc-attempts { border-top: 1px solid var(--line); padding-top: 12px; }
+.arc-block h3 { margin-bottom: 5px; }
+.arc-inline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 8px; }
+.arc-block p + p, .arc-inline + p, .arc-provenance > p { margin-top: 6px; }
+.arc-card .arc-attempt-meta { color: var(--muted); font-size: .78rem; }
+.arc-card .arc-open { color: #ffd098; background: #3b3024; }
+.arc-attempt-list { list-style: none; padding: 0; margin: 9px 0 0; }
+.arc-attempt-list li + li { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 8px; }
+.arc-attempt-list strong { display: inline-block; margin-right: 7px; font-size: .84rem; }
+@media (max-width: 870px) {
+  .arc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .arc-grid > :first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .arc-grid { grid-template-columns: minmax(0, 1fr); }
+}
