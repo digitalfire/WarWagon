@@ -108,6 +108,49 @@ class EngagementStreamingTests(unittest.TestCase):
                             data=b"{}", method="POST"), timeout=4)
         self.assertEqual(exc.exception.code, 405)
 
+    def test_corrupted_stored_events_return_422_not_false_evidence(self):
+        with self.ledger._connect() as db:
+            db.execute(
+                "UPDATE engagement_events SET payload_json=? "
+                "WHERE engagement_id=? AND event_id=?",
+                ('{"unexpected":"alteration"}', "eng-local", "engagement.created"),
+            )
+        for path in (
+            "/api/v1/engagements/eng-local",
+            "/api/v1/engagements/eng-local/events?after=0",
+        ):
+            with self.assertRaises(HTTPError) as exc:
+                self._get(path)
+            self.assertEqual(exc.exception.code, 422)
+            self.assertEqual(
+                json.loads(exc.exception.read().decode())["error"],
+                "event_integrity_failure",
+            )
+
+    def test_later_corruption_terminates_started_stream_with_error_event(self):
+        cursor = self.ledger.events("eng-local")[-1]["sequence"]
+        def tamper_after_stream_starts():
+            import time
+            time.sleep(0.06)
+            self.ledger.append("eng-local", "tool.observation", {"status": 200},
+                               event_id="tampered-later")
+            with self.ledger._connect() as db:
+                db.execute(
+                    "UPDATE engagement_events SET payload_json=? "
+                    "WHERE engagement_id=? AND event_id=?",
+                    ('{"status":500}', "eng-local", "tampered-later"),
+                )
+        worker = threading.Thread(target=tamper_after_stream_starts)
+        worker.start()
+        _, _, data = self._get(
+            "/api/v1/engagements/eng-local/events",
+            {"Last-Event-ID": str(cursor)},
+        )
+        worker.join(timeout=3)
+        self.assertIn("event: stream.error", data)
+        self.assertIn('"error":"event_integrity_failure"', data)
+        self.assertNotIn('"kind":"tool.observation"', data)
+
 
 if __name__ == "__main__":
     unittest.main()

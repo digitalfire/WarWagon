@@ -107,13 +107,21 @@ class EngagementLedger:
 
     @staticmethod
     def _event(row: sqlite3.Row) -> dict:
+        # Detect on-disk corruption before exposing an observation as evidence.
+        # This unkeyed digest is integrity checking, NOT an authenticity signature.
+        raw = row["payload_json"]
+        if not isinstance(raw, str) or row["payload_sha256"] != _digest(raw):
+            raise ValueError("stored event payload digest mismatch")
+        payload = json.loads(raw)
+        if not isinstance(payload, dict):
+            raise ValueError("stored event payload is not an object")
         return {
             "sequence": row["sequence"],
             "engagementId": row["engagement_id"],
             "eventId": row["event_id"],
             "kind": row["kind"],
             "origin": row["origin"],
-            "payload": json.loads(row["payload_json"]),
+            "payload": payload,
             "payloadSha256": row["payload_sha256"],
             "occurredAt": row["occurred_at"],
             "schemaVersion": row["schema_version"],

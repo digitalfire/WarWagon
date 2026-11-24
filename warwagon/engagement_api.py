@@ -89,15 +89,28 @@ def serve_engagement_get(
         handler.write_json(404, {"error": "engagement_not_found"})
         return True
     if suffix != "/events":
+        try:
+            snapshot = ledger.events(eid, after=0, limit=1000)
+            has_more = bool(snapshot and ledger.events(
+                eid, after=snapshot[-1]["sequence"], limit=1
+            ))
+        except (ValueError, json.JSONDecodeError):
+            handler.write_json(422, {"error": "event_integrity_failure"})
+            return True
         handler.write_json(200, {
             "schemaVersion": 1, "source": "recorded",
-            "engagement": item, "events": ledger.events(eid, after=0, limit=1000),
-            "hasMore": len(ledger.events(eid, after=0, limit=1000)) == 1000,
+            "engagement": item, "events": snapshot, "hasMore": has_more,
         })
         return True
 
     if stream_seconds <= 0 or poll_seconds <= 0:
         raise ValueError("stream configuration must be positive")
+    # Preflight integrity before sending irreversible SSE response headers.
+    try:
+        initial = ledger.events(eid, after=cursor, limit=500)
+    except (ValueError, json.JSONDecodeError):
+        handler.write_json(422, {"error": "event_integrity_failure"})
+        return True
     handler.send_response(200)
     handler.send_header("Content-Type", "text/event-stream; charset=utf-8")
     handler.send_header("Cache-Control", "no-store")
@@ -110,21 +123,32 @@ def serve_engagement_get(
     next_heartbeat = time.monotonic() + min(5.0, stream_seconds / 2)
     try:
         _write_sse(handler, comment="WarWagon engagement events v1")
+        batch = initial
         while time.monotonic() < limit_time:
-            batch = ledger.events(eid, after=cursor, limit=500)
+            if batch is None:
+                batch = ledger.events(eid, after=cursor, limit=500)
             if batch:
                 for event in batch:
                     cursor = event["sequence"]
                     _write_sse(handler, event_id=cursor, kind="engagement.event", data=event)
                 # Drain big backlogs quickly; avoid sleep between full batches.
                 if len(batch) >= 500:
+                    batch = None
                     continue
+            batch = None
             now = time.monotonic()
             if now >= next_heartbeat:
                 _write_sse(handler, comment="heartbeat")
                 next_heartbeat = now + 5.0
             # The stream is a finite connection; clients reconnect with Last-Event-ID.
             time.sleep(min(poll_seconds, max(0, limit_time - now)))
+    except (ValueError, json.JSONDecodeError):
+        # A later event may have been modified after the stream began.
+        # Send a terminal error, not an evidence-bearing record or endless retry.
+        try:
+            _write_sse(handler, kind="stream.error", data={"error": "event_integrity_failure"})
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            pass
     except (BrokenPipeError, ConnectionResetError, OSError):
         # Expected browser disconnect/reconnect. Never mutate the ledger.
         pass
