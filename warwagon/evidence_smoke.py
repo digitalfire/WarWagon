@@ -36,6 +36,19 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+def is_http_status(value):
+    return type(value) is int and 100 <= value <= 599
+
+
+def valid_claim(claim):
+    return (
+        isinstance(claim, dict)
+        and set(claim) == CLAIM_KEYS
+        and isinstance(claim["observation_sha256"], str)
+        and is_http_status(claim["status_code"])
+    )
+
+
 def completion(model, messages, tools=None):
     response = model.complete(messages, tools=tools)
     choices = response.get("choices")
@@ -75,7 +88,7 @@ def observe(model):
     if not valid_fixture_call(call):
         raise ValueError("model must select exactly one fixed fixture tool without arguments")
     observation = probe(FIXTURE_PORT)
-    if observation.get("error_type") is not None or observation.get("status_code") is None:
+    if observation.get("error_type") is not None or not is_http_status(observation.get("status_code")):
         raise ValueError("fixture HEAD did not return an HTTP status")
     return {
         "tool_call": {"id": call["id"], "type": "function", "function": {"name": TOOL_NAME, "arguments": "{}"}},
@@ -97,14 +110,25 @@ def make_claim(model, observed):
     ])
     message, details = completion(model, messages)
     raw = message.get("content")
-    claim = None
-    if isinstance(raw, str) and not message.get("tool_calls") and details["finish_reason"] in (None, "stop"):
-        fenced = re.fullmatch(r"\`\`\`(?:json)?\s*\n(.*?)\n\`\`\`", raw.strip(), re.DOTALL | re.IGNORECASE)
-        try:
-            claim = json.loads(fenced.group(1) if fenced else raw)
-        except json.JSONDecodeError:
-            pass
+    claim = None if message.get("tool_calls") else parse_claim_response(raw, details["finish_reason"])
     return {"claim": claim, "response": raw, "invocation": details}
+
+
+def unique_fields(pairs):
+    fields = dict(pairs)
+    if len(fields) != len(pairs):
+        raise ValueError("claim contains duplicate JSON fields")
+    return fields
+
+
+def parse_claim_response(raw, finish_reason):
+    if not isinstance(raw, str) or finish_reason not in (None, "stop"):
+        return None
+    fenced = re.fullmatch(r"\`\`\`(?:json)?\s*\n(.*?)\n\`\`\`", raw.strip(), re.DOTALL | re.IGNORECASE)
+    try:
+        return json.loads(fenced.group(1) if fenced else raw, object_pairs_hook=unique_fields)
+    except ValueError:
+        return None
 
 
 def checkpoint_value(database, stage, create):
@@ -153,7 +177,7 @@ def verify(run_record, expected, claim_override=None):
     if expected.get("kind") != "benign_head_expectation" or expected.get("schema_version") != 1:
         raise ValueError("expected a benign fixture expectation artifact")
     expected_status = expected.get("status_code")
-    if type(expected_status) is not int or not 100 <= expected_status <= 599:
+    if not is_http_status(expected_status):
         raise ValueError("expected status must be an HTTP status code")
     if run_record.get("kind") != "benign_head_evidence_run" or run_record.get("schema_version") != 1:
         raise ValueError("expected a benign fixture run artifact")
@@ -164,27 +188,42 @@ def verify(run_record, expected, claim_override=None):
         not isinstance(observation, dict)
         or observation.get("method") != "HEAD"
         or observation.get("url") != FIXTURE_URL
-        or observation.get("redirects_followed") != 0
-        or observation.get("error_type") is not None
+        or not is_http_status(observation.get("status_code"))
+        or type(observation.get("redirects_followed")) is not int
+        or observation["redirects_followed"] != 0
+        or "error_type" not in observation
+        or observation["error_type"] is not None
         or run_record.get("observation_sha256") != digest(observation)
     ):
         reason = "invalid_observation"
     elif observation.get("status_code") != expected_status:
         reason = "fixture_status_mismatch"
     else:
-        claim = run_record.get("claim") if claim_override is None else claim_override
-        if (
-            not isinstance(claim, dict)
-            or set(claim) != CLAIM_KEYS
-            or type(claim["status_code"]) is not int
-            or claim["observation_sha256"] != run_record["observation_sha256"]
-            or claim["status_code"] != expected_status
-        ):
-            reason = "claim_not_supported"
-        else:
-            reason = None
+        reason = claim_failure(run_record, expected_status, claim_override)
     return {"verified": reason is None, "reason": reason,
             "claim_source": "model" if claim_override is None else "supplied"}
+
+
+def claim_failure(run_record, expected_status, claim_override):
+    if claim_override is None:
+        claim = run_record.get("claim")
+        invocation = run_record.get("claim_invocation")
+        if not isinstance(invocation, dict) or "finish_reason" not in invocation:
+            return "invalid_model_claim_response"
+        recorded = parse_claim_response(run_record.get("claim_response"), invocation["finish_reason"])
+        if not valid_claim(recorded):
+            return "invalid_model_claim_response"
+        if not valid_claim(claim) or claim != recorded:
+            return "model_claim_response_mismatch"
+    else:
+        claim = claim_override
+    if (
+        not valid_claim(claim)
+        or claim["observation_sha256"] != run_record["observation_sha256"]
+        or claim["status_code"] != expected_status
+    ):
+        return "claim_not_supported"
+    return None
 
 
 def read_object(path):

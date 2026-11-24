@@ -18,7 +18,8 @@ RUN_RECORD = {
     "kind": "benign_head_evidence_run", "schema_version": 1,
     "tool_call": {"id": "call-fixture", "type": "function", "function": {"name": TOOL_NAME, "arguments": "{}"}},
     "observation": OBSERVATION, "observation_sha256": digest(OBSERVATION),
-    "claim": CORRECT,
+    "claim": CORRECT, "claim_response": json.dumps(CORRECT),
+    "claim_invocation": {"finish_reason": "stop"},
 }
 
 
@@ -128,3 +129,59 @@ class EvidenceSmokeTests(TestCase):
                 ("trace_sha256", trace), ("expectation_sha256", expected), ("supplied_claim_sha256", claim),
             ):
                 self.assertEqual(result[field], hashlib.sha256(path.read_bytes()).hexdigest())
+
+
+    def test_incomplete_or_noninteger_observations_are_invalid_with_matching_digest(self):
+        missing_status = {key: value for key, value in OBSERVATION.items() if key != "status_code"}
+        missing_error = {key: value for key, value in OBSERVATION.items() if key != "error_type"}
+        for observation in (missing_status, missing_error, {**OBSERVATION, "status_code": 204.0}):
+            with self.subTest(observation=observation):
+                record = {**RUN_RECORD, "observation": observation, "observation_sha256": digest(observation)}
+                self.assertEqual(verify(record, EXPECTED)["reason"], "invalid_observation")
+
+    def test_missing_malformed_and_unfinished_responses_are_invalid(self):
+        cases = (
+            {"claim_response": None},
+            {"claim_response": "no structured claim"},
+            {"claim_response": json.dumps({**CORRECT, "status_code": 204.0})},
+            {"claim_response": json.dumps(CORRECT)[:-1] + ', "status_code": 204}'},
+            {"claim_invocation": {"finish_reason": "length"}},
+            {"claim_invocation": {}},
+        )
+        for change in cases:
+            with self.subTest(change=change):
+                self.assertEqual(
+                    verify({**RUN_RECORD, **change}, EXPECTED)["reason"],
+                    "invalid_model_claim_response",
+                )
+
+    def test_structured_model_claim_must_match_the_raw_response(self):
+        wrong = {**CORRECT, "status_code": 200}
+        for record in (
+            {**RUN_RECORD, "claim_response": json.dumps(wrong)},
+            {**RUN_RECORD, "claim": wrong},
+            {**RUN_RECORD, "claim": None},
+            {**RUN_RECORD, "claim": {**CORRECT, "status_code": 204.0}},
+        ):
+            with self.subTest(record=record):
+                self.assertEqual(verify(record, EXPECTED)["reason"], "model_claim_response_mismatch")
+        self.assertEqual(
+            verify({**RUN_RECORD, "claim": wrong, "claim_response": json.dumps(wrong)}, EXPECTED)["reason"],
+            "claim_not_supported",
+        )
+
+    def test_supplied_claim_does_not_depend_on_the_model_response(self):
+        record = {**RUN_RECORD, "claim": None, "claim_response": None, "claim_invocation": None}
+        self.assertEqual(verify(record, EXPECTED, CORRECT), {
+            "verified": True, "reason": None, "claim_source": "supplied",
+        })
+        self.assertEqual(
+            verify(record, EXPECTED, {**CORRECT, "status_code": 200})["reason"],
+            "claim_not_supported",
+        )
+
+
+    def test_fenced_model_claim_matches_the_structured_claim(self):
+        fence = chr(96) * 3
+        record = {**RUN_RECORD, "claim_response": f"{fence}json\n{json.dumps(CORRECT)}\n{fence}"}
+        self.assertTrue(verify(record, EXPECTED)["verified"])
