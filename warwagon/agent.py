@@ -29,8 +29,13 @@ TOOLS = [{"type":"function","function":{"name":"lab_http_get",
                   "required":["path"],"additionalProperties":False}}}]
 
 class AgentRunner:
-    def __init__(self, model: ChatModel, tool: LabTool, max_steps: int = 12):
+    def __init__(self, model: ChatModel, tool: LabTool, max_steps: int = 12, event_sink=None):
         self.model, self.tool, self.max_steps = model, tool, max_steps
+        self.event_sink = event_sink
+
+    def emit(self, kind: str, payload: dict) -> None:
+        if self.event_sink is not None:
+            self.event_sink(kind, payload)
 
     def run(self, goal: str) -> dict:
         messages = [{"role":"system","content":SYSTEM},{"role":"user","content":goal}]
@@ -54,14 +59,25 @@ class AgentRunner:
                 elif not isinstance(arguments, str):
                     fn["arguments"] = "{}"
             messages.append(result)
+            self.emit("model.response", {
+                "step": step, "model": self.model.model,
+                "usage": response.get("usage") or {},
+                "toolCallCount": len(calls),
+                "hasFinal": not bool(calls),
+            })
             for key in usage:
                 usage[key] += int((response.get("usage") or {}).get(key) or 0)
             calls = result.get("tool_calls") or []
             if not calls:
                 trace.append({"step":step,"kind":"final","content":result.get("content","")})
+                self.emit("agent.final", {"step": step, "content": result.get("content") or ""})
                 break
             for call in calls:
                 fn = call.get("function",{})
+                self.emit("tool.invocation", {
+                    "step": step, "toolCallId": call.get("id"),
+                    "tool": fn.get("name"), "arguments": fn.get("arguments"),
+                })
                 try:
                     args = json.loads(fn.get("arguments") or "{}")
                     if fn.get("name") != "lab_http_get":
@@ -71,9 +87,14 @@ class AgentRunner:
                 except (ValueError, TypeError, json.JSONDecodeError) as exc:
                     output = {"error":type(exc).__name__}
                 trace.append({"step":step,"kind":"tool","name":fn.get("name"),"arguments":fn.get("arguments"),"result":output})
+                self.emit("tool.observation", {
+                    "step": step, "toolCallId": call.get("id"),
+                    "tool": fn.get("name"), "result": output,
+                })
                 messages.append({"role":"tool","tool_call_id":call.get("id","unknown"),"content":json.dumps(output)})
         else:
             trace.append({"kind":"limit","reason":"max_steps"})
+            self.emit("agent.limit", {"reason": "max_steps", "maxSteps": self.max_steps})
         return {"run_type":"real_llm_local_lab","model":self.model.model,"goal":goal,
                 "trace":trace,"usage":usage,"max_steps":self.max_steps,
                 "disclaimer":"LLM tool use measured; independent verifier result is separate"}
