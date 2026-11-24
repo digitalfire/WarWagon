@@ -6,13 +6,16 @@ model labels. A system fingerprint can describe backend configuration, while
 the underlying model weights remain unverified.
 """
 import argparse
+from contextlib import nullcontext
 import hashlib
 import json
 import os
 import re
+import sqlite3
 import time
 from urllib.parse import urlsplit
 from pathlib import Path
+from warwagon.arc_checkpoint import get_or_record, open_checkpoint
 from warwagon.model import ChatModel
 
 ROLES={
@@ -64,11 +67,15 @@ def reported_label(response, field):
     return None
 
 
-def review(model,role,proposal):
-    system=("You are the "+role+" reviewer. "+ROLES[role]+
+def review_prompt(role):
+    return ("You are the "+role+" reviewer. "+ROLES[role]+
       " Give a rigorous independent FIRST-PASS critique. Never assume other reviewers agree. "
       "Distinguish evidence from speculation. Return JSON object with keys verdict, strengths, blockers, experiments, unknowns. "
       "Use verdict support, conditional, needs-research or reject.")
+
+
+def review(model,role,proposal):
+    system = review_prompt(role)
     messages = [{"role": "system", "content": system}, {"role": "user", "content": proposal}]
     record = {
         "role": role,
@@ -193,6 +200,7 @@ def main():
         "--check-config", action="store_true",
         help="check all reviewer settings offline without reading a proposal or contacting providers",
     )
+    ap.add_argument("--checkpoint", type=Path, help="resume a first pass using a local SQLite checkpoint")
     ap.add_argument("--retry-from", type=Path, help="prior ARC artifact containing a failed review")
     ap.add_argument("--retry-role", choices=ROLES, help="run only this unsuccessful reviewer")
     args = ap.parse_args()
@@ -200,6 +208,16 @@ def main():
         ap.error("provide --model or --reviewers-file")
     if args.check_config and (args.retry_from or args.retry_role):
         ap.error("--check-config cannot be combined with retry options")
+    if args.checkpoint:
+        if args.check_config or args.retry_from or args.retry_role:
+            ap.error("--checkpoint is only available for first-pass reviews")
+        inputs = [args.proposal, args.output]
+        if args.reviewers_file:
+            inputs.append(args.reviewers_file)
+        if args.checkpoint.resolve() in {path.resolve() for path in inputs}:
+            ap.error("checkpoint must be separate from input and output artifacts")
+        if args.output.exists():
+            ap.error("checkpoint output must be a new artifact; specify an unused --output path")
     if bool(args.retry_from) != bool(args.retry_role):
         ap.error("--retry-from and --retry-role must be used together")
     if args.retry_from and (args.output.resolve() == args.retry_from.resolve() or args.output.exists()):
@@ -232,11 +250,33 @@ def main():
         }))
         return 0
 
+    manifest = {
+        "schema_version": 1,
+        "proposal_sha256": proposal_sha256,
+        "reviewers": [
+            {
+                "role": role,
+                "model": reviewers[role].model,
+                "endpoint_sha256": hashlib.sha256(reviewers[role].base_url.encode()).hexdigest(),
+                "system_prompt_sha256": hashlib.sha256(review_prompt(role).encode()).hexdigest(),
+            }
+            for role in roles
+        ],
+    }
+    checkpoint = open_checkpoint(args.checkpoint, manifest) if args.checkpoint else nullcontext()
     reviews = []
-    for role in roles:
-        record = review(reviewers[role], role, proposal)
-        reviews.append(record)
-        print(role, record["status"], flush=True)
+    try:
+        with checkpoint as database:
+            for role in roles:
+                if database is None:
+                    record, resumed = review(reviewers[role], role, proposal), False
+                else:
+                    record, resumed = get_or_record(database, role, lambda: review(reviewers[role], role, proposal))
+                reviews.append(record)
+                status = record["status"] + (" (resumed)" if resumed else "")
+                print(role, status, flush=True)
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        ap.error(str(exc))
 
     valid_reviews = [item for item in reviews if item["status"] == "valid"]
     verdict_roles = {verdict: [] for verdict in sorted(VERDICTS)}
@@ -270,7 +310,7 @@ def main():
     if previous is not None:
         payload["retry_of"] = previous
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    with args.output.open("x" if previous is not None else "w", encoding="utf-8") as output:
+    with args.output.open("x" if previous is not None or args.checkpoint else "w", encoding="utf-8") as output:
         json.dump(payload, output, indent=2)
         output.write("\n")
     print("Saved", args.output)

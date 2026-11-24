@@ -19,7 +19,7 @@ The deterministic benchmark remains a maintenance smoke test only. New primary w
 | WW-ARC-003 | P0 | Independent synthesis/dissent protocol | Actual reviews, adversarial cross-exam, human decision | Reports, challenges, evidence responses, integrity checks, and disposition records merged; maintainer decision pending |
 | WW-EVAL-001 | P0 | Measured model/tool budgets | Token, tool, latency, communication accounting | ARC attempt, retry, token, and latency accounting by configured model shipped; tool and communication budgets pending |
 | WW-EVAL-002 | P0 | First true comparative intelligence benchmark | Real model, held-out fixtures, independent verifier | Blocked by WW-INT-004 and WW-INT-005; live inference preflight passed under WW-INT-001 |
-| WW-OPS-001 | P1 | Durable trace persistence and run resumption | Kill/restart integration test | Not started |
+| WW-OPS-001 | P1 | Durable trace persistence and run resumption | Kill/restart integration test | First-pass ARC checkpoint and process-interruption test added; durable agent runtime pending |
 | WW-INT-006 | P1 | Extend HTTP/browser/code analyzers | Controlled lab assessment coverage | Not started |
 
 ## Current evidence
