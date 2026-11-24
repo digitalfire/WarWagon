@@ -1,36 +1,52 @@
-# Run inspector
+# WarWagon console
 
-Serve the static console from the repository root. No frontend package
-installation is required.
+Serve the static console from the repository root with Python. The
+browser has no package installation step.
 
 ~~~sh
 python -m http.server 48766 --bind 127.0.0.1 --directory console
 ~~~
 
-Open `http://127.0.0.1:48766/` in a modern browser. The initial view loads
-an actual `qwen3.8:27b` Ollama run recorded on November 23, 2026
-(America/New_York). The model selected the fixed HEAD tool, received
-HTTP 204 from the Docker fixture, and returned a supported claim. The
-existing verifier accepted the model claim and separately rejected a
-supplied negative-control claim. The example export contains the
-fixed loopback URL, tool call, model metadata, observation and status
-claim, and the verifier results. It has no credentials or raw prompts.
+Open `http://127.0.0.1:48766/` in a modern browser.
 
-**Open JSON files** accepts one v1 `benign_head_evidence_run` artifact
-and any associated v1 `benign_head_evidence_verification` artifacts.
-Select the run and its results together. The inspector hashes the
-original run bytes and rejects results for a different trace. A trace
-opened alone has no verifier status. Model and supplied claim verdicts
-are displayed separately.
+## Runs
 
-Imported files are read in the browser. The inspector displays verdict
-artifacts with matching trace digests. It does not rerun the verifier,
-authenticate verdict authorship, contact the observed service, or
-invoke a model. For verification, use the
+Browse recorded benign Ollama runs and select one to see tool calls,
+observations, claims, and verifier results. Search the catalog by model
+or run details. The recorded examples used `qwen3.8:27b` to call a fixed
+HEAD tool against the local Docker fixture. The independent verifier
+accepted the HTTP 204 claims and rejected supplied negative controls.
+
+**Open JSON files** accepts one v1 `benign_head_evidence_run` artifact and
+its v1 `benign_head_evidence_verification` artifacts. Open them together
+to see the associated results. The console checks each verdict's
+trace digest against the exact run bytes. A trace opened alone has no
+verifier result. Imported runs are available in the catalog for the
+current page session. The example exports contain a loopback URL, tool
+and model metadata, observations and claims, and verifier results.
+
+Imported files are read in the browser. The console displays recorded
+verdicts. To generate a verdict, use the
 [existing CLI](../benchmarks/evidence_fixture/README.md).
 
-Run the artifact-import tests with Node 22 or newer:
+## Architecture Review Council
+
+The ARC workspace shows a recorded review of ADR-0001. It preserves the
+invalid first pass alongside the valid retry, links the open challenge to
+its evidence response, and displays the recorded smoke-test disposition
+separately from the pending maintainer decision. The bundled view uses a
+projection of retained artifacts with source digests. No raw review
+responses or evidence file paths are bundled.
+
+See [ARC governance](../docs/governance/architecture-review-council.md)
+and the [prototype runbook](../docs/prototypes/real-agent-and-arc.md) for
+the review lifecycle and artifact-producing commands.
+
+## Tests
+
+Run the console's artifact tests from its directory using Node 22 or newer.
 
 ~~~sh
-node --test console/artifacts.test.mjs
+cd console
+node --test
 ~~~

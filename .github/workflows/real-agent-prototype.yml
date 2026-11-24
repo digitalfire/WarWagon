@@ -18,5 +18,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test run inspector artifact imports
-        run: node --test console/artifacts.test.mjs
+      - name: Test console artifact imports
+        working-directory: console
+        run: node --test
