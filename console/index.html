@@ -8,16 +8,20 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./arc.css">
   <link rel="stylesheet" href="./engagement.css">
+  <link rel="stylesheet" href="./mission.css">
   <script type="module" src="./inspector.js"></script>
 </head>
 <body>
   <div class="shell">
   <aside class="app-rail">
-    <a href="#overview" class="wordmark"><span class="mark" aria-hidden="true">W</span>WarWagon</a>
+    <a href="#mission" class="wordmark"><span class="mark" aria-hidden="true">W</span>WarWagon</a>
     <nav class="workspace-nav rail-nav" aria-label="Console workspaces">
       <div>
         <span class="rail-label">Operations</span>
-        <a href="#overview" id="engagement-link">Engagement</a>
+        <a href="#mission" data-workspace="mission">Mission Control</a>
+        <a href="#engagements" data-workspace="engagements">Engagements</a>
+        <a href="#new" data-workspace="new" data-new-brief>New Engagement</a>
+        <a href="#lab" data-workspace="lab">Research Laboratory</a>
       </div>
       <div>
         <span class="rail-label">Governance</span>
@@ -30,14 +34,111 @@
       <span class="mobile-brand mark" aria-hidden="true">W</span>
       <div class="crumb"><strong>WarWagon</strong> <span aria-hidden="true">/</span> <span id="workspace-crumb">Engagement</span></div>
       <nav class="workspace-nav mobile-workspaces" aria-label="Console workspaces">
-        <a href="#overview" data-workspace="overview">Engagement</a>
+        <a href="#mission" data-workspace="mission">Home</a>
+        <a href="#engagements" data-workspace="engagements">Engagements</a>
+        <a href="#new" data-workspace="new" data-new-brief>New</a>
+        <a href="#lab" data-workspace="lab">Lab</a>
         <a href="#arc" data-workspace="arc">ARC</a>
       </nav>
-      <span class="local"><span aria-hidden="true"></span> Read-only</span>
+      <span class="local"><span aria-hidden="true"></span> Local workspace</span>
     </div>
   </header>
   <main class="frame">
-    <header id="engagement-header" class="engagement-header">
+    <section id="mission-workspace" aria-labelledby="mission-heading" hidden>
+      <header class="page-header">
+        <div><h1 id="mission-heading">Mission Control</h1><p>Open recorded engagements, local drafts, and review evidence.</p></div>
+        <a class="action-link primary-link" href="#new" data-new-brief>+ New Engagement</a>
+      </header>
+      <dl class="engagement-metrics">
+        <div><dt>Recorded engagements</dt><dd id="mission-recorded">Unavailable</dd></div>
+        <div><dt>Local drafts</dt><dd id="mission-drafts">Unavailable</dd></div>
+        <div><dt>Runs loaded</dt><dd id="mission-runs">Unavailable</dd></div>
+        <div><dt>Verified model claims</dt><dd id="mission-verified">Unavailable</dd></div>
+      </dl>
+      <header class="page-header mission-section">
+        <h2>Engagements</h2><a class="action-link" href="#engagements">View library</a>
+      </header>
+      <div id="mission-cards" class="mission-cards"></div>
+      <div class="overview-grid mission-section">
+        <section class="panel overview-panel"><h2>Latest loaded run</h2><p class="subtle" id="mission-latest">Loading recorded runs…</p><p><a href="#runs">Open Investigation Console</a></p></section>
+        <section class="panel overview-panel"><h2>Research and governance</h2><ul class="overview-list"><li><a href="#lab">Planner experiments and evidence calibration</a></li><li><a href="#arc">Architecture Council review record</a></li></ul></section>
+      </div>
+    </section>
+    <section id="engagements-workspace" aria-labelledby="engagements-heading" hidden>
+      <header class="page-header">
+        <div><h1 id="engagements-heading">Engagements</h1><p>Find recorded evidence reviews and briefs saved in this browser.</p></div>
+        <a class="action-link primary-link" href="#new" data-new-brief>+ New Engagement</a>
+      </header>
+      <p id="engagement-feedback" class="notice" role="status"></p>
+      <div class="panel engagement-search">
+        <label for="engagement-search">Search engagements</label>
+        <input type="search" id="engagement-search" placeholder="Name, type, ID, or scope">
+        <span id="engagement-count" class="subtle" aria-live="polite"></span>
+      </div>
+      <div id="engagement-cards" class="mission-cards"></div>
+      <p id="engagement-empty" class="subtle" hidden>No engagements match your search.</p>
+    </section>
+    <section id="new-workspace" aria-labelledby="new-heading" hidden>
+      <header class="page-header">
+        <div><h1 id="new-heading">Create engagement</h1><p>Define an evidence review and save its briefing in this browser.</p></div>
+      </header>
+      <ol class="brief-steps" aria-label="Briefing steps">
+        <li data-brief-indicator aria-current="step">Engagement type</li>
+        <li data-brief-indicator>Objective &amp; scope</li>
+        <li data-brief-indicator>Review limits</li>
+        <li data-brief-indicator>Mission briefing</li>
+      </ol>
+      <form id="brief-form">
+        <fieldset data-brief-step class="brief-step">
+          <legend tabindex="-1">Engagement type</legend>
+          <div class="mission-cards type-options">
+            <label class="panel mission-card"><input required checked type="radio" name="type" value="Web application"><strong>Web application</strong><span>Review recorded HTTP observations and findings.</span></label>
+            <label class="panel mission-card"><input required type="radio" name="type" value="API &amp; identity"><strong>API &amp; identity</strong><span>Review supplied access and API evidence.</span></label>
+            <label class="panel mission-card"><input required type="radio" name="type" value="Cloud configuration"><strong>Cloud configuration</strong><span>Review supplied inventory and configuration records.</span></label>
+          </div>
+        </fieldset>
+        <fieldset data-brief-step class="brief-step" hidden disabled>
+          <legend tabindex="-1">Objective &amp; scope</legend>
+          <div class="overview-grid">
+            <div class="panel overview-panel brief-fields">
+              <label>Mission title<input name="title" required maxlength="100"></label>
+              <label>Objective<textarea name="objective" required maxlength="1000" rows="4"></textarea></label>
+              <label>Evidence scope<textarea name="scope" required maxlength="400" rows="2" placeholder="Example: Existing local HTTP observations"></textarea></label>
+            </div>
+            <aside class="panel overview-panel"><h2>Scope preview</h2><p class="subtle">Describe the observations, artifacts, or records the reviewer should consider.</p></aside>
+          </div>
+        </fieldset>
+        <fieldset data-brief-step class="brief-step" hidden disabled>
+          <legend tabindex="-1">Review limits</legend>
+          <div class="panel overview-panel brief-fields">
+            <label>Review time limit (minutes)<input type="number" name="reviewMinutes" required min="1" max="1440" value="30"></label>
+          </div>
+        </fieldset>
+        <fieldset data-brief-step class="brief-step" hidden disabled>
+          <legend tabindex="-1">Mission briefing</legend>
+          <div class="panel overview-panel"><dl id="brief-preview" class="stacked fields"></dl></div>
+        </fieldset>
+        <p id="brief-feedback" class="notice" role="status"></p>
+        <div class="brief-actions"><button id="brief-back" type="button" hidden>Back</button><button id="brief-next" class="primary" type="submit">Continue</button></div>
+      </form>
+    </section>
+    <section id="lab-workspace" aria-labelledby="lab-heading" hidden>
+      <header class="page-header"><div><h1 id="lab-heading">Research Laboratory</h1><p>Inspect the evidence available for comparing planner strategies.</p></div></header>
+      <div class="overview-grid">
+        <section class="panel overview-panel">
+          <div class="card-heading"><h2>Service-health calibration</h2><span class="badge">Recorded</span></div>
+          <p class="subtle">The independent scorer checked handwritten claims against two live Docker responses.</p>
+          <dl class="engagement-metrics lab-metrics"><div><dt>Matching traces</dt><dd>2 of 2 verified<progress aria-label="Matching traces verified" value="2" max="2"></progress></dd></div><div><dt>Swapped traces</dt><dd>0 of 2 verified<progress aria-label="Swapped traces verified" value="0" max="2"></progress></dd></div></dl>
+          <p><a href="https://github.com/digitalfire/WarWagon/blob/b1715cc/benchmarks/planner/health.md">Calibration methods and result</a></p>
+        </section>
+        <section class="panel overview-panel">
+          <h2>Planner comparison</h2>
+          <p class="subtle">Awaiting scored comparative runs.</p>
+          <dl class="stacked fields"><dt>Fixture</dt><dd>Controlled local service health</dd><dt>Parity</dt><dd>Same model and tool budget per strategy</dd><dt>Verification</dt><dd>Separate labels and bound probe evidence</dd></dl>
+        </section>
+      </div>
+    </section>
+    <header id="engagement-header" class="engagement-header" hidden>
       <p class="eyebrow">Engagement</p>
       <h1 class="engagement-title">Local HTTP Evidence Review</h1>
       <p class="subtle">Recorded run <span aria-hidden="true">·</span> <span id="engagement-target" class="mono">Target unavailable</span></p>
@@ -67,7 +168,7 @@
         </section>
       </div>
     </section>
-    <section id="runs-workspace" aria-labelledby="runs-heading">
+    <section id="runs-workspace" aria-labelledby="runs-heading" hidden>
       <header class="page-header">
         <div>
           <h2 id="runs-heading">Investigation Console</h2>

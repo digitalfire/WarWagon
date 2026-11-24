@@ -105,7 +105,7 @@ function runRow(record, activate) {
   return {row, button};
 }
 
-export async function mountRuns(root, { openRun }) {
+export async function mountRuns(root, { openRun, onRecords = () => {} }) {
   const workspace = element("section", "", "runs-workspace");
   const toolbar = element("div", "", "runs-toolbar");
   const search = document.createElement("input");
@@ -174,6 +174,7 @@ export async function mountRuns(root, { openRun }) {
     status.textContent = failed ? `${summary} ${failed} recorded ${failed === 1 ? "example" : "examples"} could not be loaded.` : summary;
   }
 
+  onRecords([...records.values()]);
   search.disabled = false;
   search.addEventListener("input", update);
   update();
@@ -183,6 +184,7 @@ export async function mountRuns(root, { openRun }) {
       const digest = run.trace.digest;
       const title = isExample ? exampleRecords.get(digest)?.title : undefined;
       records.set(digest, runRecord(run, { title, isExample }));
+      onRecords([...records.values()]);
       if (!preserveSearch) search.value = "";
       update();
     },

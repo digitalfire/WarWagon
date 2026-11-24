@@ -9,6 +9,19 @@ python -m http.server 48766 --bind 127.0.0.1 --directory console
 
 Open `http://127.0.0.1:48766/` in a modern browser.
 
+## Mission Control, Engagements, and Research
+
+Mission Control opens by default and summarizes loaded run artifacts and
+locally saved engagement drafts. The Engagements library uses the same
+records and supports search. New Engagement walks through type, objective
+and evidence scope, review limits, and briefing. Saving or editing a
+brief updates this browser's local storage. Briefs describe evidence reviews and are independent of the retained
+run artifacts.
+
+Research Laboratory displays the documented live Docker service-health
+scorer calibration. It reports the planner comparison as pending until
+scored comparable runs are available.
+
 ## Engagement
 
 The engagement header summarizes the selected run's recorded model calls,
