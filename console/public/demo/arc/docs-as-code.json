@@ -1,0 +1,167 @@
+{
+  "kind": "arc_review_preview",
+  "schemaVersion": 1,
+  "proposal": {
+    "id": "ADR-0001",
+    "title": "Docs as code",
+    "sha256": "b06942fc56720e339fb7925c6a40c8b7d4864168bfd30c44fd003f9dc474d40f"
+  },
+  "report": {
+    "sha256": "e4f660ed96a30027763f363596d19c6199ee1b40938b940a1416cd1dd272f972",
+    "proposalSha256": "b06942fc56720e339fb7925c6a40c8b7d4864168bfd30c44fd003f9dc474d40f",
+    "roles": [
+      {
+        "role": "agent-intelligence",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "qwen3.8:27b",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      },
+      {
+        "role": "distributed-systems",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "qwen3.8:27b",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      },
+      {
+        "role": "knowledge-data",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "qwen3.8:27b",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      },
+      {
+        "role": "security-research",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "qwen3.8:27b",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      },
+      {
+        "role": "evaluation-science",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "qwen3.8:27b",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      },
+      {
+        "role": "model-inference",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "qwen3.8:27b",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      },
+      {
+        "role": "developer-experience",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "qwen3.8:27b",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      },
+      {
+        "role": "adversarial-review",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "qwen3.8:27b",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      },
+      {
+        "role": "research-skeptic",
+        "attempts": [
+          {
+            "stage": "first-pass",
+            "artifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+            "model": "llama3:latest",
+            "status": "invalid_response",
+            "verdict": null,
+            "error": "review content is not valid JSON"
+          },
+          {
+            "stage": "retry",
+            "artifactSha256": "6d656f030051f4b231022e5473b729f05a38a1f26407f840bfcdc249fc7297ad",
+            "model": "qwen2.5:32b-instruct-q4_K_M",
+            "status": "valid",
+            "verdict": "conditional",
+            "error": null
+          }
+        ]
+      }
+    ]
+  },
+  "challenge": {
+    "sha256": "4c815a193ea0f69c6849edbacb8ee17519e5de1cf3039881e78d458960c10a70",
+    "reportSha256": "e4f660ed96a30027763f363596d19c6199ee1b40938b940a1416cd1dd272f972",
+    "status": "open",
+    "challenger": "research-skeptic",
+    "targetRole": "distributed-systems",
+    "targetArtifactSha256": "6470948397832559ce40122e33f1001657adc4c2cb9cf626bcf10be6630bf255",
+    "targetField": "blockers",
+    "targetIndex": 0,
+    "summary": "Clarify whether the exact baseline claim applies across separate documentation and code changes.",
+    "requestedEvidence": "Provide two example commit histories and state which documentation applies at each revision."
+  },
+  "evidence": {
+    "sha256": "45286a47254308b023180aac365f9cfe0cd3b5c5ad345e33ecf75006e36b8e6d",
+    "challengeSha256": "4c815a193ea0f69c6849edbacb8ee17519e5de1cf3039881e78d458960c10a70",
+    "responder": "distributed-systems",
+    "summary": "The ADR supplies baseline terminology, but does not supply both requested example histories.",
+    "title": "ADR-0001 · Docs as code",
+    "artifactSha256": "b06942fc56720e339fb7925c6a40c8b7d4864168bfd30c44fd003f9dc474d40f"
+  },
+  "smokeDisposition": {
+    "sha256": "2795e6880a01c8d725ca6cd84e4df8cd9833ce4e74f0676b7926ee7e75ec0000",
+    "challengeSha256": "4c815a193ea0f69c6849edbacb8ee17519e5de1cf3039881e78d458960c10a70",
+    "evidenceSha256": "45286a47254308b023180aac365f9cfe0cd3b5c5ad345e33ecf75006e36b8e6d",
+    "outcome": "needs-evidence",
+    "rationale": "Smoke test only. The recorded response does not supply both requested commit histories."
+  }
+}

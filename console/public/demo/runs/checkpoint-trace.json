@@ -1,0 +1,58 @@
+{
+  "kind": "benign_head_evidence_run",
+  "schema_version": 1,
+  "model": "qwen3.8:27b",
+  "contract_sha256": "ea686f36d8140298cbae3f849c69952d8a3ef7b883e4abaefc27b65b65c73a33",
+  "tool_call": {
+    "id": "call_rrxuzzv6",
+    "type": "function",
+    "function": {
+      "name": "observe_fixture_head",
+      "arguments": "{}"
+    }
+  },
+  "observation": {
+    "kind": "local_http_connectivity_trace",
+    "schema_version": 1,
+    "timestamp_utc": "2026-11-24T01:02:09.128431+00:00",
+    "method": "HEAD",
+    "url": "http://127.0.0.1:48739/",
+    "status_code": 204,
+    "redirects_followed": 0,
+    "connect_seconds": 0.00038,
+    "response_headers_seconds": 0.00262,
+    "error_type": null,
+    "remote_ip": "127.0.0.1",
+    "remote_port": 48739,
+    "http_version": "1.0",
+    "total_seconds": 0.002682
+  },
+  "observation_sha256": "2bb682b6adea9feecf326986dcb26ddb246ff198c67dc2ee68405403cfddd2ac",
+  "tool_invocation": {
+    "response_id": "chatcmpl-509",
+    "response_model": "qwen3.8:27b",
+    "finish_reason": "tool_calls",
+    "usage": {
+      "prompt_tokens": 338,
+      "completion_tokens": 55,
+      "total_tokens": 393
+    }
+  },
+  "claim": {
+    "observation_sha256": "2bb682b6adea9feecf326986dcb26ddb246ff198c67dc2ee68405403cfddd2ac",
+    "status_code": 204
+  },
+  "claim_response": "{\"observation_sha256\": \"2bb682b6adea9feecf326986dcb26ddb246ff198c67dc2ee68405403cfddd2ac\", \"status_code\": 204}",
+  "claim_invocation": {
+    "response_id": "chatcmpl-908",
+    "response_model": "qwen3.8:27b",
+    "finish_reason": "stop",
+    "usage": {
+      "prompt_tokens": 188,
+      "completion_tokens": 180,
+      "total_tokens": 368
+    }
+  },
+  "observation_reused": true,
+  "claim_reused": true
+}
