@@ -4,29 +4,73 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Run Inspector · WarWagon</title>
+  <title>WarWagon · Engagement Console</title>
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./arc.css">
+  <link rel="stylesheet" href="./engagement.css">
   <script type="module" src="./inspector.js"></script>
 </head>
 <body>
+  <div class="shell">
+  <aside class="app-rail">
+    <a href="#overview" class="wordmark"><span class="mark" aria-hidden="true">W</span>WarWagon</a>
+    <nav class="workspace-nav rail-nav" aria-label="Console workspaces">
+      <div>
+        <span class="rail-label">Operations</span>
+        <a href="#overview" id="engagement-link">Engagement</a>
+      </div>
+      <div>
+        <span class="rail-label">Governance</span>
+        <a href="#arc" data-workspace="arc">Architecture Council</a>
+      </div>
+    </nav>
+  </aside>
   <header class="topbar">
     <div class="frame topbar-content">
-      <a href="./" class="wordmark"><span class="mark" aria-hidden="true">W</span>WarWagon</a>
-      <span class="topbar-divider" aria-hidden="true"></span>
-      <span class="section-name">Operations Console</span>
-      <nav class="workspace-nav" aria-label="Console workspaces">
-        <a href="#runs" data-workspace="runs" aria-current="page">Runs</a>
+      <span class="mobile-brand mark" aria-hidden="true">W</span>
+      <div class="crumb"><strong>WarWagon</strong> <span aria-hidden="true">/</span> <span id="workspace-crumb">Engagement</span></div>
+      <nav class="workspace-nav mobile-workspaces" aria-label="Console workspaces">
+        <a href="#overview" data-workspace="overview">Engagement</a>
         <a href="#arc" data-workspace="arc">ARC</a>
       </nav>
       <span class="local"><span aria-hidden="true"></span> Read-only</span>
     </div>
   </header>
   <main class="frame">
+    <header id="engagement-header" class="engagement-header">
+      <p class="eyebrow">Engagement</p>
+      <h1 class="engagement-title">Local HTTP Evidence Review</h1>
+      <p class="subtle">Recorded run <span aria-hidden="true">·</span> <span id="engagement-target" class="mono">Target unavailable</span></p>
+      <dl class="engagement-metrics" aria-label="Selected run summary">
+        <div><dt>Model calls recorded</dt><dd id="metric-calls">Unavailable</dd></div>
+        <div><dt>Reported tokens</dt><dd id="metric-tokens">Unavailable</dd></div>
+        <div><dt>Observed response</dt><dd id="metric-response">Unavailable</dd></div>
+        <div><dt>Model claim</dt><dd id="metric-verdict">No result</dd></div>
+      </dl>
+      <nav class="workspace-nav engagement-tabs" aria-label="Engagement views">
+        <a href="#overview" data-workspace="overview">Overview</a>
+        <a href="#runs" data-workspace="runs" aria-current="page">Investigation Console</a>
+      </nav>
+    </header>
+    <section id="overview-workspace" aria-label="Engagement overview" hidden>
+      <div class="overview-grid">
+        <section class="panel overview-panel">
+          <h2>Investigation timeline</h2>
+          <ol class="overview-list" id="engagement-timeline">
+            <li>Loading the selected run…</li>
+          </ol>
+        </section>
+        <section class="panel overview-panel">
+          <h2>Review the evidence</h2>
+          <p class="subtle">Inspect the selected run’s tool invocation, observation, model claim, and recorded verifier results.</p>
+          <p><a href="#runs">Open Investigation Console</a></p>
+        </section>
+      </div>
+    </section>
     <section id="runs-workspace" aria-labelledby="runs-heading">
       <header class="page-header">
         <div>
-          <h1 id="runs-heading">Runs</h1>
+          <h2 id="runs-heading">Investigation Console</h2>
           <p>Review recorded tool calls, observations, and verifier results.</p>
         </div>
         <div class="actions">
@@ -53,6 +97,7 @@
       <div id="arc-detail"></div>
     </section>
   </main>
+  </div>
   <template id="run-template">
     <section class="run-banner" aria-labelledby="run-title">
       <div class="run-head">
