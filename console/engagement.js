@@ -1,7 +1,17 @@
+export const workspaceLabels = {
+  mission: "Mission Control",
+  engagements: "Engagements",
+  new: "New Engagement",
+  lab: "Research Laboratory",
+  overview: "Engagement",
+  runs: "Engagement",
+  arc: "ARC",
+};
+
 export function workspaceFromHash(hash) {
-  if (hash === "#arc") return "arc";
-  if (hash === "#overview") return "overview";
-  return "runs";
+  const route = hash.slice(1);
+  if (!route) return "mission";
+  return Object.hasOwn(workspaceLabels, route) ? route : "runs";
 }
 
 function tokenCount(invocation) {

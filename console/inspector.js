@@ -1,6 +1,7 @@
 import { readArtifacts } from "./artifacts.js";
 import { mountArc } from "./arc.js";
-import { summarizeRun, workspaceFromHash } from "./engagement.js";
+import { summarizeRun, workspaceFromHash, workspaceLabels } from "./engagement.js";
+import { mountMission } from "./mission.js";
 import { mountRuns, runRecord } from "./runs.js";
 
 const run = document.querySelector("#run");
@@ -9,8 +10,10 @@ const state = document.querySelector("#load-state");
 const open = document.querySelector("#open");
 const sample = document.querySelector("#sample");
 const files = document.querySelector("#files");
+const mission = mountMission(document);
 let loadRevision = 0;
 const index = mountRuns(document.querySelector("#run-index"), {
+  onRecords: mission.setRecords,
   openRun(value, isExample) {
     loadRevision++;
     state.textContent = "";
@@ -28,12 +31,14 @@ function showWorkspace() {
     if (link.dataset.workspace === current) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   }
-  for (const name of ["overview", "runs", "arc"]) {
+  for (const name of Object.keys(workspaceLabels)) {
     document.querySelector("#" + name + "-workspace").hidden = name !== current;
   }
-  document.querySelector("#engagement-header").hidden = current === "arc";
-  document.querySelector("#workspace-crumb").textContent = current === "arc" ? "ARC" : "Engagement";
-  document.querySelector("#engagement-link").dataset.currentSection = String(current !== "arc");
+  document.querySelector("#engagement-header").hidden = !["overview", "runs"].includes(current);
+  document.querySelector("#workspace-crumb").textContent = workspaceLabels[current];
+  if (["overview", "runs"].includes(current)) {
+    document.querySelector(".rail-nav [data-workspace=engagements]").setAttribute("aria-current", "location");
+  }
 
   if (current === "arc" && !arcMounted) {
     arcMounted = true;

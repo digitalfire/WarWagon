@@ -6,7 +6,9 @@ import { summarizeRun, workspaceFromHash } from "./engagement.js";
 test("links to Overview or ARC and preserves existing investigation hashes", () => {
   assert.equal(workspaceFromHash("#overview"), "overview");
   assert.equal(workspaceFromHash("#arc"), "arc");
-  for (const hash of ["", "#runs", "#investigation", "#unknown"]) {
+  assert.equal(workspaceFromHash(""), "mission");
+  assert.equal(workspaceFromHash("#new"), "new");
+  for (const hash of ["#runs", "#investigation", "#unknown"]) {
     assert.equal(workspaceFromHash(hash), "runs");
   }
 });
