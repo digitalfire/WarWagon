@@ -1,0 +1,10 @@
+{
+  "verified": true,
+  "reason": null,
+  "claim_source": "model",
+  "kind": "benign_head_evidence_verification",
+  "schema_version": 1,
+  "trace_sha256": "3d667f5b5a667fc61a88a7a527b12aa9de3e0e7b55b86050337ce85d9e64befe",
+  "expectation_sha256": "9fb53cd99f38a91276c3cd129bd0a67d36b08620f4e6c9cf28d5cfbef6f2f974",
+  "supplied_claim_sha256": null
+}

@@ -1,0 +1,36 @@
+name: React console migration
+on:
+  pull_request:
+    paths:
+      - 'console/**'
+      - '.github/workflows/console-react.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'console/**'
+      - '.github/workflows/console-react.yml'
+permissions:
+  contents: read
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install React console dependencies
+        working-directory: console
+        run: npm install --no-audit --no-fund
+      - name: Strict TypeScript and Vite production build
+        working-directory: console
+        run: npm run build
+      - name: Legacy evidence verifier and React model tests
+        working-directory: console
+        run: npm test
+      - name: Install Playwright Chromium
+        working-directory: console
+        run: npx playwright install --with-deps chromium
+      - name: Browser workflows
+        working-directory: console
+        run: npm run test:ui
