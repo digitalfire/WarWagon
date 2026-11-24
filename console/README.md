@@ -1,77 +1,41 @@
-# WarWagon console
+# WarWagon frontend
 
-Serve the static console from the repository root with Python. The
-browser has no package installation step.
+## The two deliberately separated interfaces
 
-~~~sh
+- **[Engagement UX](index.html)** is the default high-fidelity mission-centric interface restored from the approved WarWagon v2 operator design. It has three sample engagements: autonomous web application, supervised API/identity, guided cloud configuration. Includes mission creation and briefing, live workspace, task/trace inspector, reasoning frontier, verification studio, evidence graph, agent command, research/ARC concepts and operator-directive previews. **All this data is clearly simulated. It does not launch assessments.**
+- **[Recorded Run Inspector](recorded-runs.html)** preserves Codex's previously working evidence-integrity inspector, browser-side import of real JSON trace+verification files, run catalog, ARC review detail and their existing source modules. This is *recorded real-model artifact review*, not a live execution backend. The files and model invocations are distinguished from the simulated experience.
+
+Use the link in the UX left sidebar to reach the Recorded Run Inspector; its sidebar has a return link. **Never join simulated findings into real provenance or label sample actions verified.**
+
+## Run locally
+
+```bash
 python -m http.server 48766 --bind 127.0.0.1 --directory console
-~~~
+```
 
-Open `http://127.0.0.1:48766/` in a modern browser.
+Open `http://127.0.0.1:48766/`. The artifact inspector lives at `http://127.0.0.1:48766/recorded-runs.html`. No npm build is required.
 
-## Mission Control, Engagements, and Research
+## Screens in the main UX
 
-Mission Control opens by default and summarizes loaded run artifacts and
-locally saved engagement drafts. The Engagements library uses the same
-records and supports search. New Engagement walks through type, objective
-and evidence scope, review limits, and briefing. Saving or editing a
-brief updates this browser's local storage. Briefs describe evidence reviews and are independent of the retained
-run artifacts.
+- Mission Control; engagement library; four-step create/briefing
+- Three individual engagement types and overview/workspace
+- Investigation Console with task-to-tool-to-evidence navigation
+- Live Activity; Mission Plan; Reasoning Frontier; Intelligence Graph
+- Agent Command; Findings; Verification Studio; Evidence; Report; Settings
+- Research Laboratory, Agent Fleet, ARC concept and Models & Integrations
 
-Research Laboratory displays the documented live Docker service-health
-scorer calibration. It reports the planner comparison as pending until
-scored comparable runs are available.
+## Verified backend data and future integration
 
-## Engagement
+- Existing real run artifacts: bundled `demo/*.json` and imported user-selected JSON with digest checks, still handled by `inspector.js`, `artifacts.js`, `runs.js` and `arc.js` from `recorded-runs.html`.
+- Existing CLI evidence generation: `benchmarks/evidence_fixture/README.md`.
+- Current UX does **not** yet have live engagement APIs for `Engagement`, `Task`, `Observation`, `EvidenceArtifact`, `FactAssertion`, `Finding`, `OperatorDirective` or `PlanRevision`. Those should be versioned and added as adapters rather than replacing provenance-checked data with mocked responses.
+- Avoid declaring completed autonomous assessments based on demo fixtures. The sample local `127.0.0.1:3000` target is illustrative.
 
-The engagement header summarizes the selected run's recorded model calls,
-reported tokens, observed response, and model verdict. Overview shows its
-recorded event sequence. Investigation Console pairs the searchable run
-catalog with execution detail and verification. The desktop uses an
-application rail and engagement tabs. Narrow displays expose the same
-workspaces using compact navigation and stacked panels.
+## Checks
 
-The supplied design shows the full destination for this console. The
-current Investigation Console uses recorded runs as its entry point.
-A task tree will need real task lineage. Reasoning Frontier will need
-ranked proposal records. Finding Verification Studio will need associated
-finding and control evidence records. The current ARC page is the
-review detail that a future dashboard can link into.
-
-The two bundled benign runs used `qwen3.8:27b` to call a fixed HEAD tool
-against the local Docker fixture. The independent verifier accepted the
-HTTP 204 claims and rejected supplied negative controls.
-
-**Open JSON files** accepts one v1 `benign_head_evidence_run` artifact and
-its v1 `benign_head_evidence_verification` artifacts. Open them together
-to see the associated results. The console checks each verdict's
-trace digest against the exact run bytes. A trace opened alone has no
-verifier result. Imported runs are available in the catalog for the
-current page session. The example exports contain a loopback URL, tool
-and model metadata, observations and claims, and verifier results.
-
-Imported files are read in the browser. The console displays recorded
-verdicts. To generate a verdict, use the
-[existing CLI](../benchmarks/evidence_fixture/README.md).
-
-## Architecture Review Council
-
-The ARC workspace shows a recorded review of ADR-0001. It preserves the
-invalid first pass alongside the valid retry, links the open challenge to
-its evidence response, and displays the recorded smoke-test disposition
-separately from the pending maintainer decision. The bundled view uses a
-projection of retained artifacts with source digests. No raw review
-responses or evidence file paths are bundled.
-
-See [ARC governance](../docs/governance/architecture-review-council.md)
-and the [prototype runbook](../docs/prototypes/real-agent-and-arc.md) for
-the review lifecycle and artifact-producing commands.
-
-## Tests
-
-Run the console's artifact tests from its directory using Node 22 or newer.
-
-~~~sh
+```bash
 cd console
 node --test
-~~~
+```
+
+UI tests enforce the main screen set, demo/real-data separation and preserved recorded-run links. Unit tests for run parsing and digest-bound verification remain unchanged.
