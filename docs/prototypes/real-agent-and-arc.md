@@ -35,6 +35,25 @@ Endpoint hashes identify configured endpoints without exposing full URLs.
 Provider-reported model names are recorded when supplied. Multiple endpoint
 or model labels alone cannot establish independent model weights.
 
+## Resume a first-pass ARC run
+
+~~~bash
+python -m warwagon.arc --model "$WW_MODEL" --proposal docs/adr/0001-docs-as-code.md \
+  --checkpoint artifacts/arc-checkpoint.sqlite --output artifacts/arc-review.json
+~~~
+
+Keep the checkpoint on a local filesystem. Reuse the same checkpoint,
+proposal bytes, model settings and reviewer prompts to resume. Each
+committed attempt is reused, including invalid responses and failures.
+Use the separate reviewer retry command to repeat a failed role.
+
+An interrupted request can be repeated if its provider reply never
+reached the checkpoint. The checkpoint stores full review records, so
+keep it with the same access controls as the JSON trace. Its manifest
+stores endpoint hashes and configured model labels. Use a fresh
+checkpoint if you change deployments behind the same endpoint and
+label. If the output path already exists, choose a new output path.
+
 ## Retry a failed ARC reviewer
 
 Pass the original artifact and an unsuccessful role. Use the same proposal
