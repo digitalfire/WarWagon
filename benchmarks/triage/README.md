@@ -86,3 +86,32 @@ The score separates analyst workload (number of queued alerts) from miss
 coverage (the share of deferred incidents surfaced for review). A queued
 incident is still awaiting analyst review. See the
 [fresh queue comparison](queue-held-out-result.md).
+
+## Live Wazuh file-integrity import
+
+The offline importer accepts an explicit Wazuh alerts JSONL export and
+records SHA-256 provenance for the original export and each imported line.
+
+~~~bash
+python -m benchmarks.triage.fim_import wazuh-fim-live-export.jsonl --output artifacts/wazuh-fim-alerts.json
+python -m benchmarks.triage.reference guarded artifacts/wazuh-fim-alerts.json --output artifacts/wazuh-fim-decisions.json
+~~~
+
+On November 23, 2026 (America/New_York), an isolated Wazuh 4.14.10 Docker
+manager monitored one directory inside its container. After real-time
+monitoring started, a controlled edit to
+`/warwagon-fim/monitored/settings.txt` emitted rule 550 (level 7) in
+`/var/ossec/logs/alerts/alerts.json`. The event's before and after SHA-256
+values matched independent hashes of the file. The export preserved the
+matching JSONL record byte for byte.
+
+The importer produced one medium-severity alert with the normalized UTC
+timestamp, manager/agent/path scope, and matching export and record
+digests. The guarded strategy accepted the alert and deferred it via
+`severity_fallback`. The import carried no analyst labels or separate
+corroborating evidence. This run verifies live ingestion and input
+compatibility. Measuring triage quality on real telemetry still requires
+a labeled corpus.
+
+- Source image digest: `sha256:eabfa7ee4e63acb51c2130fa0583e30f843d030b091cf45a4fbd93d78fa21517`
+- One-line export SHA-256: `777a9b12427295485099ba72b3dccca053982a5f980d130a42bc5760514fe9c7`

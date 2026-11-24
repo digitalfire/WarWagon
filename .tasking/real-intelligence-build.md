@@ -43,8 +43,9 @@ candidate, with one new critical miss on stale approval evidence.
 A [fresh held-out comparison](../benchmarks/triage/guarded-held-out-result.md)
 tested age, scope, and critical-alert protection against both previous
 strategies. The guarded offline candidate had zero critical misses in
-that set. Real telemetry validation and production integration remain
-pending.
+that set. [Live Wazuh telemetry ingestion](../benchmarks/triage/README.md#live-wazuh-file-integrity-import)
+passed with a controlled file change. Triage quality on labeled real
+telemetry and production integration remain pending.
 
 The [benign Docker evidence smoke](../benchmarks/evidence_fixture/README.md)
 verified a model-selected HEAD observation, reuse across processes, and
