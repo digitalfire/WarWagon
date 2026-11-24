@@ -48,4 +48,4 @@ export interface Engagement {
 export type WorkspaceTab = 'overview' | 'investigation' | 'plan' | 'frontier' |
   'graph' | 'agents' | 'findings' | 'verification' | 'evidence' | 'report' | 'settings';
 export type MainPage = 'mission' | 'engagements' | 'new' | 'engagement' |
-  'research' | 'arc' | 'system' | 'recorded';
+  'research' | 'arc' | 'system' | 'recorded' | 'live';

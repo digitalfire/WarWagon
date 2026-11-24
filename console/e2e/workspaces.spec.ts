@@ -34,3 +34,12 @@ test('recorded run workspace shows real recorded provenance and historical repla
   await page.getByRole('button',{name:'Replay recorded events'}).click();
   await expect(page.getByText('Historical replay complete')).toBeVisible();
 });
+
+test('live event workspace shows an honest empty recorded ledger without demo findings',async({page})=>{
+  await page.goto('/');
+  await page.getByRole('button',{name:'Live Engagement Events'}).click();
+  await expect(page.getByRole('heading',{name:'Live Engagement Events'})).toBeVisible();
+  await expect(page.getByText('No persisted engagements')).toBeVisible();
+  await expect(page.getByText('This workspace reads stored local-agent events.',{exact:false})).toBeVisible();
+  await expect(page.getByText('Potential reflected HTML output encoding weakness')).toHaveCount(0);
+});

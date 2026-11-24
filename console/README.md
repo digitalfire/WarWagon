@@ -71,6 +71,16 @@ API endpoints: `/api/v1/runs`, `/api/v1/runs/{id}`, and `/api/v1/runs/{id}/event
 
 The API does not contact Ollama, run security tools or assess a target. If it is unavailable, the React recorded-run view shows an error and does **not** substitute fake verified data. The existing `recorded-runs.html` import-and-verify page remains untouched.
 
+## Persistent local-lab engagement events (LIVE-003)
+
+After starting the API gateway and running `python -m warwagon.live_lab --model YOUR_INSTALLED_MODEL` from the repository root, open **Live Engagement Events** in the React sidebar. This page reads **actual persisted events** from `GET /api/v1/engagements` and `GET /api/v1/engagements/{id}`, and subscribes to `/api/v1/engagements/{id}/events` over SSE.
+
+The client begins from the snapshot's last durable sequence, automatically reconnects (EventSource / Last-Event-ID), deduplicates by sequence, checks engagement identity, and refuses conflicting payload hashes. Open the event inspector to examine model call usage, selected tool, real HTTP observation, final report and separate lab oracle/discovery heuristic outputs.
+
+**Do not claim** this is the full task/plan UI yet: existing AgentRunner emits invocation events, not a durable task DAG. The same three illustrative engagement cards remain separate; a failure to connect the ledger does not load fake telemetry as a fallback.
+
+The stream API is read-only and local-only; the frontend does not start an assessment. See [LIVE-005](../docs/api/live-lab-events-v1.md) for the actual producer. The snapshot endpoint currently caps initial history at 1,000 events; the SSE stream continues from that cursor.
+
 ## Engineering follow-ups
 
 1. Reconcile the frontend domain types with versioned backend schemas; generate an API client.
