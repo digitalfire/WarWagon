@@ -177,7 +177,7 @@ class EngagementLedger:
                     (eid, title.strip(), target.strip(), model, "created", now, now),
                 )
                 self._insert_event(
-                    db, eid, "engagement.created", "runtime",
+                    db, eid, "engagement.created", "engagement.created", "runtime",
                     {"title": title.strip(), "target": target.strip(), "model": model}, now,
                 )
                 row = db.execute("SELECT * FROM engagements WHERE id=?", (eid,)).fetchone()
