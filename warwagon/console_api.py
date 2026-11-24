@@ -12,6 +12,9 @@ from pathlib import Path
 import re
 from urllib.parse import urlsplit
 
+from warwagon.engagement_store import DEFAULT_PATH, EngagementLedger
+from warwagon.engagement_api import serve_engagement_get
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_FIXTURES = REPO_ROOT / "console" / "demo"
 RUNS = {
@@ -93,7 +96,9 @@ def summarize(bundle):
             "modelCalls": sum(1 for u in usages if u is not None), "tokens": tokens,
             "modelVerdict": status, "traceSha256": bundle["traceSha256"]}
 
-def make_handler(root: Path):
+def make_handler(root: Path, engagement_db: Path | None = None, *, stream_seconds: float = 20.0):
+    ledger = EngagementLedger(engagement_db) if engagement_db is not None else None
+
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             pass
@@ -109,6 +114,8 @@ def make_handler(root: Path):
             self.wfile.write(body)
 
         def do_GET(self):
+            if ledger is not None and serve_engagement_get(self, ledger, stream_seconds=stream_seconds):
+                return
             path = urlsplit(self.path)
             if path.query or path.fragment:
                 self.write_json(400, {"error": "query_not_supported"})
@@ -159,10 +166,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--fixture-dir", type=Path, default=DEFAULT_FIXTURES)
+    parser.add_argument("--engagement-db", type=Path, default=DEFAULT_PATH)
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("port must be between 1 and 65535")
-    with ThreadingHTTPServer(("127.0.0.1", args.port), make_handler(args.fixture_dir)) as server:
+    with ThreadingHTTPServer(("127.0.0.1", args.port), make_handler(args.fixture_dir, engagement_db=args.engagement_db)) as server:
         print(f"Read-only recorded-run API: http://127.0.0.1:{server.server_port}/api/v1/runs", flush=True)
         server.serve_forever()
 
