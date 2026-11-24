@@ -23,8 +23,9 @@ new checkpoint for a new run. An interruption before a stage commits
 can repeat that stage. Use new output filenames for repeated exports.
 
 The verifier reads the expected status separately from the model
-run. It checks the observation digest, fixed HEAD route, status, and
-claim. To test rejection, create a claim JSON containing the trace's
+run. It checks the recorded fixed tool call, observation digest, HEAD
+route, status, and claim. The verdict records SHA-256 hashes of the exact
+trace, expectation, and supplied claim files it consumed. To test rejection, create a claim JSON containing the trace's
 `observation_sha256` and a different `status_code`, then pass it with
 `verify --claim PATH`. Exit status 1 means verification failed. The
 output distinguishes model-supplied and externally supplied claims.

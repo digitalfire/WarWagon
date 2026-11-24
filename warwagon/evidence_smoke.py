@@ -56,19 +56,23 @@ def initial_messages():
     return [{"role": "system", "content": PROMPT}, {"role": "user", "content": TASK}]
 
 
+def valid_fixture_call(call):
+    function = call.get("function") if isinstance(call, dict) else None
+    return (
+        isinstance(function, dict)
+        and call.get("type", "function") == "function"
+        and function.get("name") == TOOL_NAME
+        and decode_arguments(function.get("arguments")) == {}
+        and isinstance(call.get("id"), str)
+        and bool(call["id"].strip())
+    )
+
+
 def observe(model):
     message, details = completion(model, initial_messages(), [TOOL])
     calls = message.get("tool_calls")
     call = calls[0] if isinstance(calls, list) and len(calls) == 1 else None
-    function = call.get("function") if isinstance(call, dict) else None
-    if (
-        not isinstance(function, dict)
-        or call.get("type", "function") != "function"
-        or function.get("name") != TOOL_NAME
-        or decode_arguments(function.get("arguments")) != {}
-        or not isinstance(call.get("id"), str)
-        or not call["id"].strip()
-    ):
+    if not valid_fixture_call(call):
         raise ValueError("model must select exactly one fixed fixture tool without arguments")
     observation = probe(FIXTURE_PORT)
     if observation.get("error_type") is not None or observation.get("status_code") is None:
@@ -154,7 +158,9 @@ def verify(run_record, expected, claim_override=None):
     if run_record.get("kind") != "benign_head_evidence_run" or run_record.get("schema_version") != 1:
         raise ValueError("expected a benign fixture run artifact")
     observation = run_record.get("observation")
-    if (
+    if not valid_fixture_call(run_record.get("tool_call")):
+        reason = "invalid_fixture_tool_call"
+    elif (
         not isinstance(observation, dict)
         or observation.get("method") != "HEAD"
         or observation.get("url") != FIXTURE_URL
@@ -182,10 +188,11 @@ def verify(run_record, expected, claim_override=None):
 
 
 def read_object(path):
-    value = json.loads(path.read_bytes())
+    raw = path.read_bytes()
+    value = json.loads(raw)
     if not isinstance(value, dict):
         raise ValueError(f"{path}: expected a JSON object")
-    return value
+    return value, hashlib.sha256(raw).hexdigest()
 
 
 def write_output(path, value):
@@ -222,7 +229,17 @@ def main():
             else:
                 write_output(args.output, result)
             return 0
-        result = verify(read_object(args.trace), read_object(args.expected), read_object(args.claim) if args.claim else None)
+        trace, trace_sha256 = read_object(args.trace)
+        expected, expected_sha256 = read_object(args.expected)
+        supplied_claim, supplied_claim_sha256 = read_object(args.claim) if args.claim else (None, None)
+        result = verify(trace, expected, supplied_claim)
+        result.update({
+            "kind": "benign_head_evidence_verification",
+            "schema_version": 1,
+            "trace_sha256": trace_sha256,
+            "expectation_sha256": expected_sha256,
+            "supplied_claim_sha256": supplied_claim_sha256,
+        })
         write_output(args.output, result)
         return 0 if result["verified"] else 1
     except (OSError, ValueError, sqlite3.Error) as exc:

@@ -1,10 +1,11 @@
+import hashlib
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import patch
 
-from warwagon.evidence_smoke import FIXTURE_URL, TOOL_NAME, digest, run, verify
+from warwagon.evidence_smoke import FIXTURE_URL, TOOL_NAME, digest, main, run, verify
 
 
 OBSERVATION = {
@@ -13,6 +14,12 @@ OBSERVATION = {
 }
 EXPECTED = {"kind": "benign_head_expectation", "schema_version": 1, "status_code": 204}
 CORRECT = {"observation_sha256": digest(OBSERVATION), "status_code": 204}
+RUN_RECORD = {
+    "kind": "benign_head_evidence_run", "schema_version": 1,
+    "tool_call": {"id": "call-fixture", "type": "function", "function": {"name": TOOL_NAME, "arguments": "{}"}},
+    "observation": OBSERVATION, "observation_sha256": digest(OBSERVATION),
+    "claim": CORRECT,
+}
 
 
 class Reviewer:
@@ -69,11 +76,7 @@ class EvidenceSmokeTests(TestCase):
         probe.assert_not_called()
 
     def test_verifier_rejects_wrong_status_wrong_reference_and_changed_observation(self):
-        record = {
-            "kind": "benign_head_evidence_run", "schema_version": 1,
-            "observation": OBSERVATION, "observation_sha256": digest(OBSERVATION),
-            "claim": CORRECT,
-        }
+        record = RUN_RECORD
         self.assertTrue(verify(record, EXPECTED)["verified"])
         for unsupported in ({**CORRECT, "status_code": 200}, {**CORRECT, "observation_sha256": "wrong"}):
             with self.subTest(unsupported=unsupported):
@@ -97,3 +100,31 @@ class EvidenceSmokeTests(TestCase):
             self.assertFalse(result["claim_reused"])
             self.assertTrue(verify(result, EXPECTED)["verified"])
             probe.assert_called_once()
+
+
+    def test_verifier_rejects_altered_fixture_tool_call(self):
+        modified = {
+            **RUN_RECORD,
+            "tool_call": {"id": "call-fixture", "function": {"name": TOOL_NAME, "arguments": '{"port": 4280}'}},
+        }
+        self.assertEqual(verify(modified, EXPECTED)["reason"], "invalid_fixture_tool_call")
+
+    def test_cli_links_failed_verdict_to_exact_input_bytes(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            trace, expected, claim, outcome = (root / name for name in ("trace", "expected", "claim", "result"))
+            for path, value in (
+                (trace, RUN_RECORD), (expected, EXPECTED), (claim, {**CORRECT, "status_code": 200}),
+            ):
+                path.write_bytes(json.dumps(value, indent=2).encode() + b"\r\n")
+            with patch("sys.argv", [
+                "evidence_smoke", "verify", str(trace), "--expected", str(expected),
+                "--claim", str(claim), "--output", str(outcome),
+            ]):
+                self.assertEqual(main(), 1)
+            result = json.loads(outcome.read_bytes())
+            self.assertFalse(result["verified"])
+            for field, path in (
+                ("trace_sha256", trace), ("expectation_sha256", expected), ("supplied_claim_sha256", claim),
+            ):
+                self.assertEqual(result[field], hashlib.sha256(path.read_bytes()).hexdigest())
