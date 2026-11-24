@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { MainPage } from '../domain/types';
 import { useWorkspace } from '../state/workspace';
 const groups:{title:string;items:{id:MainPage;label:string;icon:typeof Activity}[]}[]=[
-  {title:'OPERATIONS',items:[{id:'mission',label:'Mission Control',icon:LayoutDashboard},{id:'engagements',label:'Engagements',icon:Layers3},{id:'new',label:'New Engagement',icon:Plus}]},
+  {title:'OPERATIONS',items:[{id:'mission',label:'Mission Control',icon:LayoutDashboard},{id:'live',label:'Live Engagement Events',icon:Activity},{id:'engagements',label:'Engagements',icon:Layers3},{id:'new',label:'New Engagement',icon:Plus}]},
   {title:'INTELLIGENCE',items:[{id:'recorded',label:'Recorded Run Evidence',icon:FileCheck2},{id:'research',label:'Research Laboratory',icon:FlaskConical},{id:'arc',label:'Architecture Council',icon:UsersRound}]},
   {title:'PLATFORM',items:[{id:'system',label:'Models & Tools',icon:Boxes}]},
 ];
