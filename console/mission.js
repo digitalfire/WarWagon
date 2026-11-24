@@ -97,6 +97,12 @@ export function mountMission(root) {
     };
   }
 
+  function showScope() {
+    const { type, scope } = values();
+    byId("scope-type").textContent = type;
+    byId("scope-preview").textContent = scope || "No evidence scope entered yet.";
+  }
+
   function showStep() {
     for (const [index, panel] of steps.entries()) {
       panel.hidden = index !== step;
@@ -104,6 +110,7 @@ export function mountMission(root) {
       if (index === step) indicators[index].setAttribute("aria-current", "step");
       else indicators[index].removeAttribute("aria-current");
     }
+    if (step === 1) showScope();
     back.hidden = step === 0;
     next.textContent = step === steps.length - 1 ? "Save local draft" : "Continue";
     if (step === steps.length - 1) {
@@ -172,6 +179,7 @@ export function mountMission(root) {
   for (const link of root.querySelectorAll("[data-new-brief]")) {
     link.addEventListener("click", () => edit());
   }
+  form.elements.namedItem("scope").addEventListener("input", showScope);
   search.addEventListener("input", update);
   edit();
   update();
