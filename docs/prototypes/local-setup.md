@@ -28,6 +28,22 @@ $result.trace | Format-List
 
 Preflight sends one harmless structured `report_probe` call, not a security testing action. If it fails, diagnose model API/tool capability before running WarWagon.
 
+## Check a published local HTTP port
+
+Run the standalone probe from the network namespace where the port is
+published. For a Windows-host loopback port, use Windows Python with the
+checkout available on its module path.
+
+~~~powershell
+py -3 -m warwagon.http_probe --port 8080 --output artifacts/http-connectivity.json
+~~~
+
+Replace the example port with the host port to check. The probe sends
+one unauthenticated HEAD request to the IPv4 loopback root. It records
+the HTTP status and timings, follows zero redirects, and uses no model.
+A received redirect is a valid connectivity result. This check does
+not serve as a model-driven assessment trace.
+
 ## Run an ARC smoke review
 ```powershell
 py -3 -m warwagon.arc --model $env:WW_MODEL --proposal docs/adr/0001-docs-as-code.md --output artifacts/arc-review.json
