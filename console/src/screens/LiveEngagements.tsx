@@ -45,7 +45,7 @@ export function LiveEngagements(){
   const models=events.filter(e=>e.kind==='model.response');
   const toolCalls=events.filter(e=>e.kind==='tool.invocation');
   const focused=events.find(e=>e.sequence===eventSequence)??events.at(-1);
-  const terminal=events.findLast(e=>e.kind==='engagement.completed'||e.kind==='engagement.failed'||e.kind==='engagement.canceled');
+  const terminal=[...events].reverse().find(e=>e.kind==='engagement.completed'||e.kind==='engagement.failed'||e.kind==='engagement.canceled');
   return <div className="ww-screen">
     <header className="ww-page-head"><div><span className="ww-overline">WARWAGON / PERSISTED ENGAGEMENT EXECUTION</span><h1>Live Engagement Events</h1>
       <p>Observe real local-lab model calls, tool execution and durable evidence as the agent runs.</p></div>
