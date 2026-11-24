@@ -1,5 +1,6 @@
 import { readArtifacts } from "./artifacts.js";
 import { mountArc } from "./arc.js";
+import { summarizeRun, workspaceFromHash } from "./engagement.js";
 import { mountRuns, runRecord } from "./runs.js";
 
 const run = document.querySelector("#run");
@@ -22,13 +23,17 @@ const index = mountRuns(document.querySelector("#run-index"), {
 let arcMounted = false;
 
 function showWorkspace() {
-  const current = location.hash === "#arc" ? "arc" : "runs";
+  const current = workspaceFromHash(location.hash);
   for (const link of document.querySelectorAll("[data-workspace]")) {
     if (link.dataset.workspace === current) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
-    document.querySelector("#" + link.dataset.workspace + "-workspace").hidden =
-      link.dataset.workspace !== current;
   }
+  for (const name of ["overview", "runs", "arc"]) {
+    document.querySelector("#" + name + "-workspace").hidden = name !== current;
+  }
+  document.querySelector("#engagement-header").hidden = current === "arc";
+  document.querySelector("#workspace-crumb").textContent = current === "arc" ? "ARC" : "Engagement";
+  document.querySelector("#engagement-link").dataset.currentSection = String(current !== "arc");
 
   if (current === "arc" && !arcMounted) {
     arcMounted = true;
@@ -88,6 +93,24 @@ function render(value, isSample) {
   const args = tool?.function?.arguments;
   const claim = data.claim;
   const { date, time, verdict, tone } = runRecord(value);
+  const { modelCalls, tokens, httpStatus } = summarizeRun(data);
+  const metrics = {
+    "engagement-target": observation?.url,
+    "metric-calls": modelCalls,
+    "metric-tokens": tokens,
+    "metric-response": httpStatus == null ? null : "HTTP " + httpStatus,
+    "metric-verdict": verdict,
+  };
+  for (const [id, metric] of Object.entries(metrics)) {
+    document.getElementById(id).textContent = metric ?? "Unavailable";
+  }
+  const events = [
+    tool?.function?.name && "Tool called · " + tool.function.name,
+    observation && (httpStatus == null ? "Observation recorded" : "Observed HTTP " + httpStatus),
+    claim?.status_code != null && "Model claimed HTTP " + claim.status_code,
+    "Recorded model verdict · " + verdict,
+  ].filter(Boolean);
+  document.querySelector("#engagement-timeline").replaceChildren(...events.map(event => element("li", event)));
 
   set("source", isSample ? "Recorded example" : "Imported run");
   set("timestamp", date);

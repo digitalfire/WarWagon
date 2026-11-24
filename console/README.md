@@ -9,13 +9,25 @@ python -m http.server 48766 --bind 127.0.0.1 --directory console
 
 Open `http://127.0.0.1:48766/` in a modern browser.
 
-## Runs
+## Engagement
 
-Browse recorded benign Ollama runs and select one to see tool calls,
-observations, claims, and verifier results. Search the catalog by model
-or run details. The recorded examples used `qwen3.8:27b` to call a fixed
-HEAD tool against the local Docker fixture. The independent verifier
-accepted the HTTP 204 claims and rejected supplied negative controls.
+The engagement header summarizes the selected run's recorded model calls,
+reported tokens, observed response, and model verdict. Overview shows its
+recorded event sequence. Investigation Console pairs the searchable run
+catalog with execution detail and verification. The desktop uses an
+application rail and engagement tabs. Narrow displays expose the same
+workspaces using compact navigation and stacked panels.
+
+The supplied design shows the full destination for this console. The
+current Investigation Console uses recorded runs as its entry point.
+A task tree will need real task lineage. Reasoning Frontier will need
+ranked proposal records. Finding Verification Studio will need associated
+finding and control evidence records. The current ARC page is the
+review detail that a future dashboard can link into.
+
+The two bundled benign runs used `qwen3.8:27b` to call a fixed HEAD tool
+against the local Docker fixture. The independent verifier accepted the
+HTTP 204 claims and rejected supplied negative controls.
 
 **Open JSON files** accepts one v1 `benign_head_evidence_run` artifact and
 its v1 `benign_head_evidence_verification` artifacts. Open them together
