@@ -19,7 +19,7 @@ The deterministic benchmark remains a maintenance smoke test only. New primary w
 | WW-ARC-003 | P0 | Independent synthesis/dissent protocol | Actual reviews, adversarial cross-exam, human decision | Reports, challenges, evidence responses, integrity checks, and disposition records merged; maintainer decision pending |
 | WW-EVAL-001 | P0 | Measured model/tool budgets | Token, tool, latency, communication accounting | ARC attempt, retry, token, and latency accounting by configured model shipped; tool and communication budgets pending |
 | WW-EVAL-002 | P0 | First true comparative intelligence benchmark | Real model, held-out fixtures, independent verifier | Blocked by WW-INT-004 and WW-INT-005; live inference preflight passed under WW-INT-001 |
-| WW-OPS-001 | P1 | Durable trace persistence and run resumption | Kill/restart integration test | First-pass ARC checkpoint and process-interruption test added; durable agent runtime pending |
+| WW-OPS-001 | P1 | Durable trace persistence and run resumption | Kill/restart integration test | ARC checkpoint and benign Ollama observation restart verified; durable assessment runtime pending |
 | WW-INT-006 | P1 | Extend HTTP/browser/code analyzers | Controlled lab assessment coverage | Not started |
 
 ## Current evidence
@@ -45,6 +45,11 @@ tested age, scope, and critical-alert protection against both previous
 strategies. The guarded offline candidate had zero critical misses in
 that set. Real telemetry validation and production integration remain
 pending.
+
+The [benign Docker evidence smoke](../benchmarks/evidence_fixture/README.md)
+verified a model-selected HEAD observation, reuse across processes, and
+acceptance and rejection of supported and unsupported claims. This is
+a bounded tool/evidence check outside the open assessment acceptance gate.
 
 ## Build-readiness decision
 **Start coding now.** Sufficient planning exists for a vertical slice: model adapter, real tool loop, local fixture, review dispatcher. Open architectural decisions should be resolved via short, measured ADRs when a component needs them; do not hold the whole project pending a grand architecture freeze.
