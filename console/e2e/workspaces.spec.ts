@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 test('operator opens investigation and follows evidence to verification',async({page})=>{
   await page.goto('/');
   await expect(page.getByRole('heading',{name:'Mission Control'})).toBeVisible();
-  await page.getByRole('button',{name:/Local Web Application Assessment/}).click();
+  await page.locator('.ww-engagement-card').filter({hasText:'Local Web Application Assessment'}).click();
   await expect(page.getByRole('heading',{name:'Local Web Application Assessment'})).toBeVisible();
   await page.getByRole('tab',{name:'Investigation'}).click();
   await page.getByRole('button',{name:/Evaluate reflected markup/}).click();
@@ -21,5 +21,6 @@ test('new engagement saves a draft but does not launch a real assessment',async(
   await page.getByRole('button',{name:/Continue/}).click();
   await page.getByRole('checkbox').check();
   await page.getByRole('button',{name:/Save concept briefing/}).click();
+  await expect(page.getByRole('heading',{name:'New local application review'})).toBeVisible();
   await expect(page.getByText('Draft (not launched)')).toBeVisible();
 });

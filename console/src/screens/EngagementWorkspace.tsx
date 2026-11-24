@@ -96,7 +96,8 @@ function Settings({engagement}:{engagement:Engagement}){
 }
 function OperatorCommand({engagement}:{engagement:Engagement}){
   const mode=useWorkspace(s=>s.operatorMode),setMode=useWorkspace(s=>s.setOperatorMode),add=useWorkspace(s=>s.addOperatorNote);
-  const notes=useWorkspace(s=>s.operatorNotes.filter(n=>n.engagementId===engagement.id));
+  const allNotes=useWorkspace(s=>s.operatorNotes);
+  const notes=allNotes.filter(n=>n.engagementId===engagement.id);
   const [message,setMessage]=useState('');
   return <Panel title="Operator Command Channel" detail="Ask, direct and command are distinct intentions. This preview does not dispatch backend actions.">
     <div className="ww-segmented">{(['ask','direct','command'] as const).map(value=><button key={value} className={mode===value?'active':''} onClick={()=>setMode(value)}>{value}</button>)}</div>
