@@ -20,4 +20,4 @@ jobs:
           node-version: '22'
       - name: Test console artifact imports
         working-directory: console
-        run: node --test
+        run: node --test *.test.mjs

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Activity, Bot, Boxes, FlaskConical, LayoutDashboard, Layers3, Menu, Plus, Settings2, Shield, UsersRound, X } from 'lucide-react';
+import { Activity, Boxes, FlaskConical, LayoutDashboard, Layers3, Menu, Plus, Settings2, Shield, UsersRound, X } from 'lucide-react';
 import { useState } from 'react';
 import type { MainPage } from '../domain/types';
 import { useWorkspace } from '../state/workspace';
