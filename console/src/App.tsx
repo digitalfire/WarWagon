@@ -4,6 +4,7 @@ import { useWorkspace } from './state/workspace';
 import { MissionControl } from './screens/MissionControl';
 import { NewEngagement } from './screens/NewEngagement';
 import { EngagementWorkspace } from './screens/EngagementWorkspace';
+import { RecordedRuns } from './screens/RecordedRuns';
 import { ResearchLaboratory, ArchitectureCouncil, SystemIntegrations } from './screens/Supporting';
 const queryClient = new QueryClient({defaultOptions:{queries:{retry:1,refetchOnWindowFocus:false}}});
 function WorkspaceContent(){
@@ -14,6 +15,7 @@ function WorkspaceContent(){
     case 'new':return <NewEngagement/>;
     case 'engagement':return <EngagementWorkspace/>;
     case 'research':return <ResearchLaboratory/>;
+    case 'recorded':return <RecordedRuns/>;
     case 'arc':return <ArchitectureCouncil/>;
     case 'system':return <SystemIntegrations/>;
   }
