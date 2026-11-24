@@ -29,3 +29,7 @@ Other independent work packages:
 - [#57](https://github.com/digitalfire/WarWagon/issues/57): independent tests and review.
 
 A future real local lab runner must persist its own actual model/tool observations to the ledger. No autonomous execution or model inference is implied by creating an event store.
+
+## Stored payload integrity
+
+The ledger recalculates and checks each stored event payload SHA-256 before returning the event to readers. Mismatched digests raise an error, and the API refuses to present the tampered payload. **SHA-256 alone is not an authenticity proof:** an attacker who can modify the database and digest together could forge an internally consistent record. Signed or hash-chained event history and database access protection remain separate future work.

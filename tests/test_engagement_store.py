@@ -108,6 +108,21 @@ class EngagementLedgerTests(unittest.TestCase):
         self.assertEqual(len(self.store.events(eid)), 1)
         self.assertEqual(self.store.get_engagement(eid)["state"], "created")
 
+    def test_stored_event_digest_checked_on_every_read_and_idempotent_retry(self):
+        engagement = self.store.create_engagement("Integrity", "lab")
+        eid = engagement["id"]
+        self.store.append(eid, "tool.observation", {"status": 200}, event_id="original")
+        with self.store._connect() as db:
+            db.execute(
+                "UPDATE engagement_events SET payload_json=? "
+                "WHERE engagement_id=? AND event_id=?",
+                ('{"status":201}', eid, "original"),
+            )
+        with self.assertRaisesRegex(ValueError, "stored event payload digest mismatch"):
+            self.store.events(eid)
+        with self.assertRaisesRegex(ValueError, "stored event payload digest mismatch"):
+            self.store.append(eid, "tool.observation", {"status": 200}, event_id="original")
+
 
 if __name__ == "__main__":
     unittest.main()

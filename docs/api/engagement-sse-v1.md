@@ -35,3 +35,7 @@ These cover concurrent external event producer, cursor replay, malformed cursors
 - Before exposure beyond localhost: authentication, authorization, backpressure, stronger input validation, bounded streams/client connections, redaction and auditing are needed.
 - Inference/runtime events can include sensitive data; do not expose this dev server to the network.
 - Explicitly distinguish **agent observation**, **unverified hypothesis**, and **independently verified finding** in all API projections.
+
+## Corruption handling
+
+Before sending SSE response headers the server validates its first event batch. If a stored payload digest mismatches, it returns HTTP 422. If corruption is discovered after a stream has already started, the server emits a terminal `stream.error` event and closes that stream; the React client stops reconnecting rather than accepting invalid evidence. The detail endpoint also returns HTTP 422 for corrupted stored events.

@@ -34,6 +34,12 @@ export function useLedgerFeed(engagementId:string|null){
         });
       }catch{setError('Malformed streamed event');setStatus('unavailable');sse.close();}
     });
+    sse.addEventListener('stream.error',()=>{
+      if(!active)return;
+      setError('A stored event failed integrity validation. Stream stopped.');
+      setStatus('unavailable');
+      sse.close();
+    });
     sse.onerror=()=>{if(active)setStatus(previous=>previous==='unavailable'?'unavailable':'reconnecting');};
     return ()=>{active=false;sse.close();};
   },[engagementId,detail.data]);
