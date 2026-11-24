@@ -1,0 +1,28 @@
+{
+  "kind": "arc_review_quality_checklist",
+  "schema_version": 1,
+  "proposal_sha256": "db28549932d82844538966a89305d92bf40bab11d0976d25bcefae23a65072c9",
+  "role": "evaluation-science",
+  "items": [
+    {
+      "id": "decision-authority",
+      "criterion": "Explain why completed support or conditional reviews and challenge dispositions cannot establish proposal approval, and require an explicit decision record or a non-approved state."
+    },
+    {
+      "id": "partial-bundle",
+      "criterion": "Identify that a report-only or otherwise incomplete upload can hide an existing open challenge, and require an unknown or incomplete state when the necessary artifacts are missing."
+    },
+    {
+      "id": "disposition-lineage",
+      "criterion": "Reject title, role, or file modification time as substitutes for linking the exact proposal, challenge, and evidence response. Explain why a disposition for a prior response cannot automatically apply to a replacement."
+    },
+    {
+      "id": "attribution",
+      "criterion": "Explain that a caller-supplied maintainer name and a matching digest establish neither identity nor authority. Require honest attribution or a separate authenticity mechanism."
+    },
+    {
+      "id": "decision-accuracy",
+      "criterion": "Identify that a complete-only corpus and agreement with the latest file do not test whether the badge is correct. Propose at least one partial, conflicting, or superseded case and an independently defined expected display state."
+    }
+  ]
+}
