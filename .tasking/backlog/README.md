@@ -30,6 +30,9 @@ The master export contains early research and governance-oriented tasks, includi
 
 ## Reconciliation before work is dispatched
 
+See the [first reconciliation pass](reconciliation.md) for measured overlaps,
+merged evidence, and work to carry forward.
+
 1. Compare candidate work against current `main`, [current-state](../../docs/context/current-state.md), accepted ADRs and active GitHub issues.
 2. Mark as **already implemented**, **active**, **needs redesign**, **later**, **duplicate**, or **superseded**; retain original IDs.
 3. Add unambiguous code ownership, concrete test commands, acceptance evidence, realistic dependencies and current contract refs.
