@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Run Inspector · WarWagon</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./inspector.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="frame topbar-content">
+      <a href="./" class="wordmark"><span class="mark" aria-hidden="true">W</span>WarWagon</a>
+      <span class="topbar-divider" aria-hidden="true"></span>
+      <span class="section-name">Operations Console</span>
+      <span class="local"><span aria-hidden="true"></span> Read-only</span>
+    </div>
+  </header>
+  <main class="frame">
+    <header class="page-header">
+      <div>
+        <h1>Run inspector</h1>
+        <p>Inspect model actions, tool evidence, and verifier results.</p>
+      </div>
+      <div class="actions">
+        <button id="sample" type="button">Load example</button>
+        <button id="open" class="primary" type="button">Open JSON files</button>
+        <input id="files" type="file" multiple accept=".json,application/json" hidden>
+      </div>
+    </header>
+    <div id="load-state" class="notice" role="status" aria-live="polite">Loading the recorded Ollama run…</div>
+    <div id="run" hidden></div>
+  </main>
+  <template id="run-template">
+    <section class="run-banner" aria-labelledby="run-title">
+      <div class="run-head">
+        <p class="eyebrow" data-field="source"></p>
+        <h2 id="run-title">Benign HTTP evidence run</h2>
+        <p class="subtle" data-field="timestamp"></p>
+      </div>
+      <div class="run-summary">
+        <dl><dt>Model</dt><dd data-field="model"></dd></dl>
+        <dl><dt>Target</dt><dd class="mono" data-field="target"></dd></dl>
+        <dl><dt>Model verdict</dt><dd><span data-field="summary-verdict" class="badge"></span></dd></dl>
+      </div>
+    </section>
+    <div class="run-grid">
+      <section aria-labelledby="timeline-title" class="timeline">
+        <h2 id="timeline-title" class="group-heading">Run timeline</h2>
+        <article class="step">
+          <div class="step-icon" aria-hidden="true">↗</div>
+          <div class="panel step-content">
+            <div class="card-heading"><h3>Tool call</h3><span class="tag">Model</span></div>
+            <p class="code-value mono" data-field="tool"></p>
+            <dl class="fields">
+              <dt>Arguments</dt><dd class="mono" data-field="arguments"></dd>
+              <dt>Call ID</dt><dd class="mono" data-field="call-id"></dd>
+              <dt>Reported tokens</dt><dd data-field="tool-tokens"></dd>
+            </dl>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-icon" aria-hidden="true">◎</div>
+          <div class="panel step-content">
+            <div class="card-heading"><h3>Observation</h3><span class="tag">HTTP probe</span></div>
+            <div class="observation-head"><span class="method mono" data-field="method"></span><span class="mono" data-field="url"></span></div>
+            <dl class="fields">
+              <dt>Status</dt><dd data-field="status"></dd>
+              <dt>Duration</dt><dd data-field="duration"></dd>
+              <dt>Redirects followed</dt><dd data-field="redirects"></dd>
+              <dt>Checkpoint</dt><dd data-field="checkpoint"></dd>
+            </dl>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-icon" aria-hidden="true">◇</div>
+          <div class="panel step-content">
+            <div class="card-heading"><h3>Claim</h3><span class="tag">Model</span></div>
+            <p class="code-value mono" data-field="claim-status"></p>
+            <dl class="fields">
+              <dt>Observation SHA-256</dt><dd class="mono digest" data-field="claim-digest"></dd>
+              <dt>Reported tokens</dt><dd data-field="claim-tokens"></dd>
+            </dl>
+          </div>
+        </article>
+      </section>
+      <aside aria-labelledby="verification-title">
+        <h2 id="verification-title" class="group-heading">Verification</h2>
+        <section class="panel verification-panel" aria-label="Verifier results" data-field="reports"></section>
+        <details class="panel provenance">
+          <summary>Artifact provenance</summary>
+          <dl class="stacked fields">
+            <dt>Run file</dt><dd data-field="file"></dd>
+            <dt>Run SHA-256</dt><dd class="mono digest" data-field="trace-digest"></dd>
+            <dt>Observation SHA-256</dt><dd class="mono digest" data-field="observation-digest"></dd>
+          </dl>
+        </details>
+      </aside>
+    </div>
+  </template>
+</body>
+</html>
